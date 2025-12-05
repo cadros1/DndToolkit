@@ -20,6 +20,7 @@ namespace DnDToolkit.Models
         [ObservableProperty] private string alliesAndOrganizations = ""; // 同盟&组织
         [ObservableProperty] private string additionalFeaturesAndTraits = ""; // 附加特征 (P2中间)
         [ObservableProperty] private string treasure = ""; // 所持物/宝藏 (P2底部)
+        [ObservableProperty] private string characterExperience = ""; // 角色经历
 
         // P1 右下角: 特殊能力 (Features & Traits)
         [ObservableProperty] private string featuresAndTraits = "";

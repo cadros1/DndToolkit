@@ -126,7 +126,7 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="属性" FontSize="14" FontWeight="Bold" Grid.Column="0"/>
                                 <TextBlock Text="数值" FontSize="12" Grid.Column="1" HorizontalAlignment="Center" Foreground="Gray"/>
-                                <TextBlock Text="调整" FontSize="12" Grid.Column="2" HorizontalAlignment="Center" Foreground="Gray" Margin="0,0,5,0"/>
+                                <TextBlock Text="调整值" FontSize="12" Grid.Column="2" HorizontalAlignment="Center" Foreground="Gray" Margin="0,0,5,0"/>
                             </Grid>
 
                             <ItemsControl>
@@ -339,14 +339,16 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="15"/>
                                         <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="护甲等级AC" Style="{StaticResource LabelStyle}"/>
-                                        <ui:NumberBox Value="{Binding CurrentCharacter.Combat.ArmorClass, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <ui:NumberBox Value="{Binding CurrentCharacter.Combat.ArmorClass, UpdateSourceTrigger=PropertyChanged}" Minimum="0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="先攻" Style="{StaticResource LabelStyle}"/>
-                                        <ui:NumberBox Value="{Binding CurrentCharacter.Combat.Initiative, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <ui:NumberBox Value="{Binding CurrentCharacter.Combat.Initiative, UpdateSourceTrigger=PropertyChanged}" Minimum="0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="4">
                                         <TextBlock Text="速度" Style="{StaticResource LabelStyle}"/>
@@ -354,11 +356,15 @@
                                     </StackPanel>
                                     <StackPanel Grid.Column="6">
                                         <TextBlock Text="最大 HP" Style="{StaticResource LabelStyle}"/>
-                                        <ui:NumberBox Value="{Binding CurrentCharacter.Combat.HitPointsMax, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <ui:NumberBox Value="{Binding CurrentCharacter.Combat.HitPointsMax, UpdateSourceTrigger=PropertyChanged}" Minimum="0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="8">
                                         <TextBlock Text="生命骰" Style="{StaticResource LabelStyle}"/>
                                         <ui:TextBox Text="{Binding CurrentCharacter.Combat.HitDiceTotal}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="10">
+                                        <TextBlock Text="经验值" Style="{StaticResource LabelStyle}"/>
+                                        <ui:NumberBox Value="{Binding CurrentCharacter.Profile.ExperiencePoints, UpdateSourceTrigger=PropertyChanged}" Minimum="0"/>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
@@ -573,25 +579,25 @@
                             <ui:Card Grid.Row="0" Grid.Column="0">
                                 <StackPanel>
                                     <TextBlock Text="个性" Style="{StaticResource LabelStyle}"/>
-                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.PersonalityTraits}" AcceptsReturn="True" Height="80" TextWrapping="Wrap"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.PersonalityTraits}" AcceptsReturn="True" MinHeight="75" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </ui:Card>
                             <ui:Card Grid.Row="0" Grid.Column="2">
                                 <StackPanel>
                                     <TextBlock Text="理想" Style="{StaticResource LabelStyle}"/>
-                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.Ideals}" AcceptsReturn="True" Height="80" TextWrapping="Wrap"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.Ideals}" AcceptsReturn="True" MinHeight="75" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </ui:Card>
                             <ui:Card Grid.Row="2" Grid.Column="0">
                                 <StackPanel>
                                     <TextBlock Text="纽带" Style="{StaticResource LabelStyle}"/>
-                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.Bonds}" AcceptsReturn="True" Height="80" TextWrapping="Wrap"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.Bonds}" AcceptsReturn="True" MinHeight="75" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </ui:Card>
                             <ui:Card Grid.Row="2" Grid.Column="2">
                                 <StackPanel>
                                     <TextBlock Text="缺陷" Style="{StaticResource LabelStyle}"/>
-                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.Flaws}" AcceptsReturn="True" Height="80" TextWrapping="Wrap"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.Flaws}" AcceptsReturn="True" MinHeight="75" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </ui:Card>
                         </Grid>
@@ -605,21 +611,28 @@
                             <ui:Card Grid.Column="0">
                                 <StackPanel>
                                     <TextBlock Text="盟友与组织" Style="{StaticResource LabelStyle}"/>
-                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.AlliesAndOrganizations}" AcceptsReturn="True" MinHeight="100"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.AlliesAndOrganizations}" AcceptsReturn="True" MinHeight="75"/>
                                 </StackPanel>
                             </ui:Card>
                             <ui:Card Grid.Column="2">
                                 <StackPanel>
                                     <TextBlock Text="所持物" Style="{StaticResource LabelStyle}"/>
-                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.Treasure}" AcceptsReturn="True" MinHeight="100"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.Treasure}" AcceptsReturn="True" MinHeight="75"/>
                                 </StackPanel>
                             </ui:Card>
                         </Grid>
 
+                        <ui:Card VerticalAlignment="Stretch" Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="角色经历" Style="{StaticResource LabelStyle}"/>
+                                <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.CharacterExperience}" AcceptsReturn="True" MinHeight="150" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </ui:Card>
+
                         <ui:Card VerticalAlignment="Stretch">
                             <StackPanel>
                                 <TextBlock Text="背景故事" Style="{StaticResource LabelStyle}"/>
-                                <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.CharacterBackstory}" AcceptsReturn="True" MinHeight="200" TextWrapping="Wrap"/>
+                                <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.CharacterBackstory}" AcceptsReturn="True" MinHeight="150" TextWrapping="Wrap"/>
                             </StackPanel>
                         </ui:Card>
                     </StackPanel>
