@@ -19,14 +19,17 @@ namespace DnDToolkit.ViewModels
     {
         private readonly ICharacterService _characterService;
         private readonly INavigationService _navigationService;
+        private readonly PdfDataService _pdfDataService;
 
         [ObservableProperty]
         private ObservableCollection<Character> characters = new();
 
-        public CharacterListViewModel(ICharacterService characterService, INavigationService navigationService)
+        public CharacterListViewModel(ICharacterService characterService, INavigationService navigationService, PdfDataService pdfDataService)
         {
             _characterService = characterService;
             _navigationService = navigationService;
+            _pdfDataService = pdfDataService;
+
         }
 
         // 页面加载时调用此方法刷新数据
@@ -73,6 +76,37 @@ namespace DnDToolkit.ViewModels
                 // 3. 从界面列表中移除
                 Characters.Remove(character);
             }
+        }
+
+        // === 导入功能 ===
+        [RelayCommand]
+        private async Task Import()
+        {
+            // 1. 调用服务读取 PDF
+            var character = await _pdfDataService.ImportCharacterPdfAsync();
+
+            if (character != null)
+            {
+                // 2. 保存到本地数据库/JSON
+                await _characterService.SaveCharacterAsync(character);
+
+                // 3. 添加到界面列表
+                Characters.Add(character);
+
+                MessageBox.Show($"角色“{character.Profile.CharacterName}”导入成功！", "成功");
+            }
+        }
+
+        // === 导出功能 ===
+        [RelayCommand]
+        private async Task Export(Character character)
+        {
+            if (character == null) return;
+
+            // 调用服务导出 PDF
+            await _pdfDataService.ExportCharacterPdfAsync(character);
+
+            // (PdfDataService 内部已经处理了 SaveFileDialog，所以这里不需要额外提示，除非出错)
         }
     }
 }

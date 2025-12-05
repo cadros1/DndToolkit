@@ -9,7 +9,7 @@
       xmlns:vm="clr-namespace:DnDToolkit.ViewModels"
       xmlns:helpers="clr-namespace:DnDToolkit.Helpers"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="702" d:DesignWidth="1080"
       d:DataContext="{d:DesignInstance Type=vm:CharacterListViewModel}"
       Title="CharacterListPage">
 
@@ -36,11 +36,19 @@
                 <TextBlock Text="我的角色列表" FontSize="24" FontWeight="SemiBold"/>
             </StackPanel>
 
-            <ui:Button Grid.Column="1" 
-                       Appearance="Primary" 
-                       Icon="{ui:SymbolIcon Add24}" 
-                       Content="新建角色"
-                       Command="{Binding CreateNewCommand}"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <!-- 导入按钮 -->
+                <ui:Button Appearance="Secondary" 
+                           Icon="{ui:SymbolIcon ArrowImport24}" 
+                           Content="从PDF导入"
+                           Command="{Binding ImportCommand}"/>
+
+                <!-- 新建按钮 -->
+                <ui:Button Appearance="Primary" 
+                           Icon="{ui:SymbolIcon Add24}" 
+                           Content="新建角色"
+                           Command="{Binding CreateNewCommand}"/>
+            </StackPanel>
         </Grid>
 
         <ui:ListView Grid.Row="1" 
@@ -57,7 +65,7 @@
             <ui:ListView.ItemTemplate>
                 <DataTemplate DataType="{x:Type models:Character}">
                     <!-- 卡片边框 -->
-                    <Border Width="280" Height="100"
+                    <Border Width="300" Height="120"
                             Padding="12"
                             CornerRadius="8"
                             BorderThickness="1"
@@ -104,7 +112,7 @@
                                                FontSize="12" Foreground="{DynamicResource ui:TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="80"/>
                                 </StackPanel>
 
-                                <!-- === 按钮组 (修改了这里) === -->
+                                <!-- === 按钮组 === -->
                                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
 
                                     <!-- 编辑按钮 -->
@@ -116,7 +124,15 @@
                                                Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                                CommandParameter="{Binding}"/>
 
-                                    <!-- 删除按钮 (新增) -->
+                                    <!-- 导出 -->
+                                    <ui:Button Icon="{ui:SymbolIcon Share16}"
+                                               Appearance="Secondary"
+                                               ToolTip="导出"
+                                               Margin="0,0,8,0"
+                                               Command="{Binding DataContext.ExportCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                               CommandParameter="{Binding}"/>
+
+                                    <!-- 删除按钮 -->
                                     <!-- Appearance="Danger" 会让按钮变红 (取决于Wpf.Ui版本)，如果没有变红也没关系 -->
                                     <ui:Button Icon="{ui:SymbolIcon Delete16}"
                                                Appearance="Danger" 
