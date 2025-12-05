@@ -82,7 +82,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <ui:NumberBox Grid.Column="0" Value="{Binding CurrentCharacter.Combat.HitPointsCurrent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="当前"/>
+                            <ui:NumberBox Grid.Column="0" Value="{Binding CurrentCharacter.Combat.HitPointsCurrent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             <TextBlock Grid.Column="1" Text="/" VerticalAlignment="Center" Margin="5,0"/>
                             <TextBlock Grid.Column="2" Text="{Binding CurrentCharacter.Combat.HitPointsMax}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         </Grid>

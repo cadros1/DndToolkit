@@ -140,7 +140,7 @@ namespace DnDToolkit.ViewModels
             OtherOptions.Add(new RollOption { Name = "先攻检定", Type = "Other", BaseModifier = CurrentCharacter.Combat.Initiative, IsFixedDice = true });
             foreach (var w in CurrentCharacter.Weapons)
             {
-                OtherOptions.Add(new RollOption { Name = "武器攻击检定" + w.Name, Type = "Other", BaseModifier = w.AttackBonus, IsFixedDice = true, Context = w });
+                OtherOptions.Add(new RollOption { Name = "武器攻击检定：" + w.Name, Type = "Other", BaseModifier = w.AttackBonus, IsFixedDice = true, Context = w });
             }
             OtherOptions.Add(new RollOption { Name = "死亡豁免", Type = "Other", BaseModifier = 0, IsFixedDice = true });
 
