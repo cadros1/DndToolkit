@@ -8,6 +8,7 @@
       xmlns:models="clr-namespace:DnDToolkit.Models"
       xmlns:helpers="clr-namespace:DnDToolkit.Helpers"
       mc:Ignorable="d"
+      d:DesignHeight="702" d:DesignWidth="1080"
       d:DataContext="{d:DesignInstance vm:EditorViewModel}"
       Title="EditorPage">
 
@@ -493,7 +494,7 @@
                         <ui:Card Grid.Column="2">
                             <StackPanel>
                                 <TextBlock Text="特殊能力" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                                <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.FeaturesAndTraits}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="120"/>
+                                <ui:TextBox Text="{Binding CurrentCharacter.Combat.Ability}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="120"/>
                             </StackPanel>
                         </ui:Card>
                     </Grid>
@@ -622,12 +623,25 @@
                             </ui:Card>
                         </Grid>
 
-                        <ui:Card VerticalAlignment="Stretch" Margin="0,0,0,20">
-                            <StackPanel>
-                                <TextBlock Text="角色经历" Style="{StaticResource LabelStyle}"/>
-                                <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.CharacterExperience}" AcceptsReturn="True" MinHeight="150" TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </ui:Card>
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:Card Grid.Column="0">
+                                <StackPanel>
+                                    <TextBlock Text="附加特征" Style="{StaticResource LabelStyle}"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.FeaturesAndTraits}" AcceptsReturn="True" MinHeight="75"/>
+                                </StackPanel>
+                            </ui:Card>
+                            <ui:Card Grid.Column="2">
+                                <StackPanel>
+                                    <TextBlock Text="角色经历" Style="{StaticResource LabelStyle}"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.CharacterExperience}" AcceptsReturn="True" MinHeight="75"/>
+                                </StackPanel>
+                            </ui:Card>
+                        </Grid>
 
                         <ui:Card VerticalAlignment="Stretch">
                             <StackPanel>

@@ -35,5 +35,7 @@ namespace DnDToolkit.Models
 
         // --- 攻击&施法 下方的备注文本框 ---
         [ObservableProperty] private string attacksAndSpellcastingNotes = "";
+
+        [ObservableProperty] private string ability = "";
     }
 }
