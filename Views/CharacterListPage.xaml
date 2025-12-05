@@ -1,0 +1,134 @@
+﻿<Page x:Class="DnDToolkit.Views.CharacterListPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:DnDToolkit.Views"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:models="clr-namespace:DnDToolkit.Models"
+      xmlns:vm="clr-namespace:DnDToolkit.ViewModels"
+      xmlns:helpers="clr-namespace:DnDToolkit.Helpers"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      d:DataContext="{d:DesignInstance Type=vm:CharacterListViewModel}"
+      Title="CharacterListPage">
+
+    <Page.Resources>
+        <helpers:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
+        <helpers:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+    </Page.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 顶部操作栏 -->
+        <Grid Grid.Row="0" Margin="0,0,0,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:SymbolIcon Symbol="People24" FontSize="24"/>
+                <TextBlock Text="我的角色列表" FontSize="24" FontWeight="SemiBold"/>
+            </StackPanel>
+
+            <ui:Button Grid.Column="1" 
+                       Appearance="Primary" 
+                       Icon="{ui:SymbolIcon Add24}" 
+                       Content="新建角色"
+                       Command="{Binding CreateNewCommand}"/>
+        </Grid>
+
+        <ui:ListView Grid.Row="1" 
+                     ItemsSource="{Binding Characters}" 
+                     SelectionMode="Single"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
+            <ui:ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ListView}}"/>
+                </ItemsPanelTemplate>
+            </ui:ListView.ItemsPanel>
+
+            <ui:ListView.ItemTemplate>
+                <DataTemplate DataType="{x:Type models:Character}">
+                    <!-- 卡片边框 -->
+                    <Border Width="280" Height="100"
+                            Padding="12"
+                            CornerRadius="8"
+                            BorderThickness="1"
+                            Background="{DynamicResource ControlFillColorDefaultBrush}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 头像区域 (保持不变) -->
+                            <Grid Grid.Column="0" Width="64" Height="64" Margin="0,0,16,0">
+                                <Border CornerRadius="32" 
+                                        Background="{DynamicResource ui:ControlFillColorSecondaryBrush}"
+                                        Visibility="{Binding Profile.PortraitBase64, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=Inverse}">
+                                    <ui:SymbolIcon Symbol="Person48" FontSize="32" Foreground="{DynamicResource ui:TextFillColorTertiaryBrush}"/>
+                                </Border>
+                                <Border CornerRadius="32" 
+                                        Visibility="{Binding Profile.PortraitBase64, Converter={StaticResource StringToVisibilityConverter}}">
+                                    <Border.Background>
+                                        <ImageBrush ImageSource="{Binding Profile.PortraitBase64, Converter={StaticResource Base64ToImageConverter}}" 
+                                                    Stretch="UniformToFill"/>
+                                    </Border.Background>
+                                </Border>
+                            </Grid>
+
+                            <!-- 右侧文本信息 -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+
+                                <!-- 名字 -->
+                                <TextBlock Text="{Binding Profile.CharacterName, TargetNullValue='未命名角色', FallbackValue='未命名角色'}" 
+                                           FontSize="16" 
+                                           FontWeight="Bold" 
+                                           TextTrimming="CharacterEllipsis"/>
+
+                                <!-- 种族职业 -->
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <TextBlock Text="{Binding Profile.Race}" 
+                                               FontSize="12" Foreground="{DynamicResource ui:TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="80"/>
+                                    <TextBlock Text=" | " FontSize="12"  Foreground="{DynamicResource ui:TextFillColorTertiaryBrush}"/>
+                                    <TextBlock Text="{Binding Profile.ClassAndLevel}" 
+                                               FontSize="12" Foreground="{DynamicResource ui:TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="80"/>
+                                </StackPanel>
+
+                                <!-- === 按钮组 (修改了这里) === -->
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+
+                                    <!-- 编辑按钮 -->
+                                    <ui:Button Content="编辑" 
+                                               Icon="{ui:SymbolIcon Edit16}"
+                                               Appearance="Secondary"
+                                               Margin="0,0,8,0" 
+                                               HorizontalAlignment="Left"
+                                               Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                               CommandParameter="{Binding}"/>
+
+                                    <!-- 删除按钮 (新增) -->
+                                    <!-- Appearance="Danger" 会让按钮变红 (取决于Wpf.Ui版本)，如果没有变红也没关系 -->
+                                    <ui:Button Icon="{ui:SymbolIcon Delete16}"
+                                               Appearance="Danger" 
+                                               ToolTip="删除角色"
+                                               Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                               CommandParameter="{Binding}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ui:ListView.ItemTemplate>
+        </ui:ListView>
+    </Grid>
+</Page>

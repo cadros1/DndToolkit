@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36511.14 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DnDToolkit", "DnDToolkit.csproj", "{1139477D-17AE-4EE5-AC2D-3A101068871A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1139477D-17AE-4EE5-AC2D-3A101068871A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1139477D-17AE-4EE5-AC2D-3A101068871A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1139477D-17AE-4EE5-AC2D-3A101068871A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1139477D-17AE-4EE5-AC2D-3A101068871A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C582D795-51FF-4842-8473-B1672CBA0E57}
+	EndGlobalSection
+EndGlobal

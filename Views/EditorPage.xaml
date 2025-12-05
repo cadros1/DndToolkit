@@ -1,0 +1,725 @@
+﻿<Page x:Class="DnDToolkit.Views.EditorPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:vm="clr-namespace:DnDToolkit.ViewModels"
+      xmlns:models="clr-namespace:DnDToolkit.Models"
+      xmlns:helpers="clr-namespace:DnDToolkit.Helpers"
+      mc:Ignorable="d"
+      d:DataContext="{d:DesignInstance vm:EditorViewModel}"
+      Title="EditorPage">
+
+    <Page.Resources>
+        <helpers:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
+        <helpers:IntToVisibilityConverter x:Key="IntToVisibilityConverter"/>
+
+        <!-- 统一标签样式 -->
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+        </Style>
+
+        <!-- 属性调整值样式 -->
+        <Style x:Key="ModBoxStyle" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- 顶部固定 -->
+            <RowDefinition Height="*"/>
+            <!-- 下方滚动 -->
+        </Grid.RowDefinitions>
+
+        <!-- 1. 顶部操作栏 -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:Button Icon="{ui:SymbolIcon ArrowLeft24}" Appearance="Secondary" Command="{Binding CancelCommand}" ToolTip="返回列表"/>
+                <TextBlock Text="编辑角色" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                <TextBlock Text="{Binding CurrentCharacter.Profile.CharacterName, StringFormat='{} - {0}'}" FontSize="20" Foreground="Gray" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <ui:Button Grid.Column="1" Appearance="Primary" Icon="{ui:SymbolIcon Save24}" Content="保存修改" Command="{Binding SaveCommand}"/>
+        </Grid>
+
+        <TabControl Grid.Row="1">
+            <!-- ========================= TAB 1: 基础信息 ========================= -->
+            <TabItem Header="基础信息">
+                <Grid Margin="0,15,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 左侧：档案信息 -->
+                    <StackPanel Grid.Column="0">
+                        <ui:Card VerticalAlignment="Top" Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="基本档案" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,15">
+                                        <TextBlock Text="角色姓名" Style="{StaticResource LabelStyle}"/>
+                                        <ui:TextBox Text="{Binding CurrentCharacter.Profile.CharacterName}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,15">
+                                        <TextBlock Text="玩家姓名" Style="{StaticResource LabelStyle}"/>
+                                        <ui:TextBox Text="{Binding CurrentCharacter.Profile.PlayerName}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,15">
+                                        <TextBlock Text="种族" Style="{StaticResource LabelStyle}"/>
+                                        <ui:TextBox Text="{Binding CurrentCharacter.Profile.Race}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,15">
+                                        <TextBlock Text="职业与等级" Style="{StaticResource LabelStyle}"/>
+                                        <ui:TextBox Text="{Binding CurrentCharacter.Profile.ClassAndLevel}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="2" Grid.Column="0">
+                                        <TextBlock Text="背景" Style="{StaticResource LabelStyle}"/>
+                                        <ui:TextBox Text="{Binding CurrentCharacter.Profile.Background}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="2" Grid.Column="2">
+                                        <TextBlock Text="阵营" Style="{StaticResource LabelStyle}"/>
+                                        <ui:TextBox Text="{Binding CurrentCharacter.Profile.Alignment}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </ui:Card>
+                    </StackPanel>
+
+                    <!-- 右侧：六维属性 -->
+                    <ui:Card Grid.Column="2" VerticalAlignment="Top">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="属性" FontSize="14" FontWeight="Bold" Grid.Column="0"/>
+                                <TextBlock Text="数值" FontSize="12" Grid.Column="1" HorizontalAlignment="Center" Foreground="Gray"/>
+                                <TextBlock Text="调整" FontSize="12" Grid.Column="2" HorizontalAlignment="Center" Foreground="Gray" Margin="0,0,5,0"/>
+                            </Grid>
+
+                            <ItemsControl>
+                                <StackPanel>
+                                    <!-- Strength -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="STR" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        <ui:NumberBox Grid.Column="1" Value="{Binding CurrentCharacter.Attributes.Strength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"/>
+                                        <Border Grid.Column="2" Style="{StaticResource ModBoxStyle}">
+                                            <TextBlock Text="{Binding CurrentCharacter.Attributes.StrengthMod, StringFormat='{}{0:+0;-0;0}'}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"/>
+                                        </Border>
+                                    </Grid>
+                                    <!-- Dexterity -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="DEX" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        <ui:NumberBox Grid.Column="1" Value="{Binding CurrentCharacter.Attributes.Dexterity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"/>
+                                        <Border Grid.Column="2" Style="{StaticResource ModBoxStyle}">
+                                            <TextBlock Text="{Binding CurrentCharacter.Attributes.DexterityMod, StringFormat='{}{0:+0;-0;0}'}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"/>
+                                        </Border>
+                                    </Grid>
+                                    <!-- Constitution -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="CON" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        <ui:NumberBox Grid.Column="1" Value="{Binding CurrentCharacter.Attributes.Constitution, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"/>
+                                        <Border Grid.Column="2" Style="{StaticResource ModBoxStyle}">
+                                            <TextBlock Text="{Binding CurrentCharacter.Attributes.ConstitutionMod, StringFormat='{}{0:+0;-0;0}'}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"/>
+                                        </Border>
+                                    </Grid>
+                                    <!-- Intelligence -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="INT" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        <ui:NumberBox Grid.Column="1" Value="{Binding CurrentCharacter.Attributes.Intelligence, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"/>
+                                        <Border Grid.Column="2" Style="{StaticResource ModBoxStyle}">
+                                            <TextBlock Text="{Binding CurrentCharacter.Attributes.IntelligenceMod, StringFormat='{}{0:+0;-0;0}'}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"/>
+                                        </Border>
+                                    </Grid>
+                                    <!-- Wisdom -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="WIS" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        <ui:NumberBox Grid.Column="1" Value="{Binding CurrentCharacter.Attributes.Wisdom, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"/>
+                                        <Border Grid.Column="2" Style="{StaticResource ModBoxStyle}">
+                                            <TextBlock Text="{Binding CurrentCharacter.Attributes.WisdomMod, StringFormat='{}{0:+0;-0;0}'}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"/>
+                                        </Border>
+                                    </Grid>
+                                    <!-- Charisma -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="CHA" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        <ui:NumberBox Grid.Column="1" Value="{Binding CurrentCharacter.Attributes.Charisma, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"/>
+                                        <Border Grid.Column="2" Style="{StaticResource ModBoxStyle}">
+                                            <TextBlock Text="{Binding CurrentCharacter.Attributes.CharismaMod, StringFormat='{}{0:+0;-0;0}'}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"/>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ui:Card>
+                </Grid>
+            </TabItem>
+
+            <!-- ========================= TAB 2: 熟练项 ========================= -->
+            <TabItem Header="熟练项">
+                <Grid Margin="0,15,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 左列: 基础数据 & 豁免 -->
+                    <StackPanel Grid.Column="0">
+                        <ui:Card Margin="0,0,0,20">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,15">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="熟练加值" Style="{StaticResource LabelStyle}"/>
+                                        <ui:NumberBox Value="{Binding CurrentCharacter.Profile.ProficiencyBonus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="被动察觉" Style="{StaticResource LabelStyle}"/>
+                                        <ui:NumberBox Value="{Binding CurrentCharacter.Profile.PassivePerception, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </ui:Card>
+
+                        <ui:Card>
+                            <StackPanel>
+                                <TextBlock Text="豁免熟练" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                <StackPanel>
+                                    <CheckBox Content="力量 (Strength)" IsChecked="{Binding CurrentCharacter.Proficiencies.StrengthSave}"/>
+                                    <CheckBox Content="敏捷 (Dexterity)" IsChecked="{Binding CurrentCharacter.Proficiencies.DexteritySave}"/>
+                                    <CheckBox Content="体质 (Constitution)" IsChecked="{Binding CurrentCharacter.Proficiencies.ConstitutionSave}"/>
+                                    <CheckBox Content="智力 (Intelligence)" IsChecked="{Binding CurrentCharacter.Proficiencies.IntelligenceSave}"/>
+                                    <CheckBox Content="感知 (Wisdom)" IsChecked="{Binding CurrentCharacter.Proficiencies.WisdomSave}"/>
+                                    <CheckBox Content="魅力 (Charisma)" IsChecked="{Binding CurrentCharacter.Proficiencies.CharismaSave}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </ui:Card>
+                    </StackPanel>
+
+                    <!-- 右列: 技能 & 其他 -->
+                    <StackPanel Grid.Column="2">
+                        <ui:Card Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="技能熟练" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <CheckBox Content="运动 (Athletics)" IsChecked="{Binding CurrentCharacter.Proficiencies.Athletics}"/>
+                                        <CheckBox Content="体操 (Acrobatics)" IsChecked="{Binding CurrentCharacter.Proficiencies.Acrobatics}"/>
+                                        <CheckBox Content="巧手 (Sleight of Hand)" IsChecked="{Binding CurrentCharacter.Proficiencies.SleightOfHand}"/>
+                                        <CheckBox Content="隐匿 (Stealth)" IsChecked="{Binding CurrentCharacter.Proficiencies.Stealth}"/>
+                                        <CheckBox Content="奥秘 (Arcana)" IsChecked="{Binding CurrentCharacter.Proficiencies.Arcana}"/>
+                                        <CheckBox Content="历史 (History)" IsChecked="{Binding CurrentCharacter.Proficiencies.History}"/>
+                                        <CheckBox Content="调查 (Investigation)" IsChecked="{Binding CurrentCharacter.Proficiencies.Investigation}"/>
+                                        <CheckBox Content="自然 (Nature)" IsChecked="{Binding CurrentCharacter.Proficiencies.Nature}"/>
+                                        <CheckBox Content="宗教 (Religion)" IsChecked="{Binding CurrentCharacter.Proficiencies.Religion}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <CheckBox Content="驯兽 (Animal Handling)" IsChecked="{Binding CurrentCharacter.Proficiencies.AnimalHandling}"/>
+                                        <CheckBox Content="洞悉 (Insight)" IsChecked="{Binding CurrentCharacter.Proficiencies.Insight}"/>
+                                        <CheckBox Content="医药 (Medicine)" IsChecked="{Binding CurrentCharacter.Proficiencies.Medicine}"/>
+                                        <CheckBox Content="察觉 (Perception)" IsChecked="{Binding CurrentCharacter.Proficiencies.Perception}"/>
+                                        <CheckBox Content="生存 (Survival)" IsChecked="{Binding CurrentCharacter.Proficiencies.Survival}"/>
+                                        <CheckBox Content="欺瞒 (Deception)" IsChecked="{Binding CurrentCharacter.Proficiencies.Deception}"/>
+                                        <CheckBox Content="威吓 (Intimidation)" IsChecked="{Binding CurrentCharacter.Proficiencies.Intimidation}"/>
+                                        <CheckBox Content="表演 (Performance)" IsChecked="{Binding CurrentCharacter.Proficiencies.Performance}"/>
+                                        <CheckBox Content="游说 (Persuasion)" IsChecked="{Binding CurrentCharacter.Proficiencies.Persuasion}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </ui:Card>
+
+                        <ui:Card VerticalAlignment="Stretch">
+                            <StackPanel>
+                                <TextBlock Text="其它熟练项 &amp; 语言" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                <ui:TextBox Text="{Binding CurrentCharacter.Proficiencies.OtherProficienciesAndLanguages}"
+                                                AcceptsReturn="True" TextWrapping="Wrap" MinHeight="100"/>
+                            </StackPanel>
+                        </ui:Card>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- ========================= TAB 3: 战斗信息 ========================= -->
+            <TabItem Header="冒险信息">
+                <Grid Margin="0,15,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Row 0: 核心数据 -->
+                    <Grid Grid.Row="0" Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <!-- HP -->
+                        </Grid.ColumnDefinitions>
+
+                        <ui:Card Grid.Column="0">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="护甲等级AC" Style="{StaticResource LabelStyle}"/>
+                                        <ui:NumberBox Value="{Binding CurrentCharacter.Combat.ArmorClass, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="先攻" Style="{StaticResource LabelStyle}"/>
+                                        <ui:NumberBox Value="{Binding CurrentCharacter.Combat.Initiative, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="4">
+                                        <TextBlock Text="速度" Style="{StaticResource LabelStyle}"/>
+                                        <ui:TextBox Text="{Binding CurrentCharacter.Combat.Speed}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="6">
+                                        <TextBlock Text="最大 HP" Style="{StaticResource LabelStyle}"/>
+                                        <ui:NumberBox Value="{Binding CurrentCharacter.Combat.HitPointsMax, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="8">
+                                        <TextBlock Text="生命骰" Style="{StaticResource LabelStyle}"/>
+                                        <ui:TextBox Text="{Binding CurrentCharacter.Combat.HitDiceTotal}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </ui:Card>
+                    </Grid>
+
+                    <!-- Row 1: 攻击与钱币 -->
+                    <Grid Grid.Row="1" Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 攻击列表 -->
+                        <ui:Card Grid.Column="0" VerticalAlignment="Stretch">
+                            <StackPanel>
+                                <TextBlock Text="攻击" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                <Grid Margin="0,0,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="3*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="2*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="名称" Style="{StaticResource LabelStyle}"/>
+                                    <TextBlock Grid.Column="2" Text="加值" Style="{StaticResource LabelStyle}"/>
+                                    <TextBlock Grid.Column="4" Text="伤害/类型" Style="{StaticResource LabelStyle}"/>
+                                </Grid>
+
+                                <ItemsControl ItemsSource="{Binding CurrentCharacter.Weapons}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="3*"/>
+                                                    <ColumnDefinition Width="10"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="10"/>
+                                                    <ColumnDefinition Width="2*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <ui:TextBox Grid.Column="0" Text="{Binding Name}"/>
+                                                <ui:NumberBox Grid.Column="2" Value="{Binding AttackBonus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                <ui:TextBox Grid.Column="4" Text="{Binding Damage}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <TextBlock Text="其它攻击 / 法术备注" Style="{StaticResource LabelStyle}" Margin="0,15,0,5"/>
+                                <ui:TextBox Text="{Binding CurrentCharacter.Combat.AttacksAndSpellcastingNotes}" AcceptsReturn="True" Height="60"/>
+                            </StackPanel>
+                        </ui:Card>
+
+                        <!-- 钱币 (表格化) -->
+                        <ui:Card Grid.Column="2">
+                            <StackPanel>
+                                <TextBlock Text="钱币" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- CP -->
+                                    <Border Grid.Row="0" Background="#CD7F32" Height="30" Width="30" CornerRadius="15" Margin="0,0,0,10">
+                                        <TextBlock Text="CP" Foreground="White" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Border>
+                                    <ui:NumberBox Grid.Row="0" Grid.Column="1" Margin="0,0,0,10" Value="{Binding CurrentCharacter.Inventory.CP, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                    <!-- SP -->
+                                    <Border Grid.Row="1" Background="Silver" Height="30" Width="30" CornerRadius="15" Margin="0,0,0,10">
+                                        <TextBlock Text="SP" Foreground="Black" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Border>
+                                    <ui:NumberBox Grid.Row="1" Grid.Column="1" Margin="0,0,0,10" Value="{Binding CurrentCharacter.Inventory.SP, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                    <!-- EP -->
+                                    <Border Grid.Row="2" Background="#9FA1AB" Height="30" Width="30" CornerRadius="15" Margin="0,0,0,10">
+                                        <TextBlock Text="EP" Foreground="White" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Border>
+                                    <ui:NumberBox Grid.Row="2" Grid.Column="1" Margin="0,0,0,10" Value="{Binding CurrentCharacter.Inventory.EP, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                    <!-- GP -->
+                                    <Border Grid.Row="3" Background="Gold" Height="30" Width="30" CornerRadius="15" Margin="0,0,0,10">
+                                        <TextBlock Text="GP" Foreground="Black" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"/>
+                                    </Border>
+                                    <ui:NumberBox Grid.Row="3" Grid.Column="1" Margin="0,0,0,10" Value="{Binding CurrentCharacter.Inventory.GP, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                    <!-- PP -->
+                                    <Border Grid.Row="4" Background="#E5E4E2" Height="30" Width="30" CornerRadius="15">
+                                        <TextBlock Text="PP" Foreground="Black" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Border>
+                                    <ui:NumberBox Grid.Row="4" Grid.Column="1" Value="{Binding CurrentCharacter.Inventory.PP, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </Grid>
+                            </StackPanel>
+                        </ui:Card>
+                    </Grid>
+
+                    <!-- Row 2: 装备与特性 -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ui:Card Grid.Column="0">
+                            <StackPanel>
+                                <TextBlock Text="装备" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                <ui:TextBox Text="{Binding CurrentCharacter.Inventory.EquipmentText}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="120"/>
+                            </StackPanel>
+                        </ui:Card>
+                        <ui:Card Grid.Column="2">
+                            <StackPanel>
+                                <TextBlock Text="特殊能力" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.FeaturesAndTraits}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="120"/>
+                            </StackPanel>
+                        </ui:Card>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <!-- ========================= TAB 4: 人物设定 ========================= -->
+            <TabItem Header="人物设定">
+                <Grid Margin="0,15,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="2.5*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Col 0: 画像与外貌 -->
+                    <StackPanel Grid.Column="0">
+                        <ui:Card Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="画像" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                <Border CornerRadius="8" ClipToBounds="True" Background="#F0F0F0" Height="250" Margin="0,0,0,10">
+                                    <ui:Image Source="{Binding CurrentCharacter.Profile.PortraitBase64, Converter={StaticResource Base64ToImageConverter}}" Stretch="UniformToFill"/>
+                                </Border>
+                                <ui:Button Content="选择图片" Icon="{ui:SymbolIcon ImageAdd24}" HorizontalAlignment="Stretch" Command="{Binding ChangePortraitCommand}"/>
+                            </StackPanel>
+                        </ui:Card>
+
+                        <ui:Card>
+                            <StackPanel>
+                                <TextBlock Text="外貌特征" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- 年龄 -->
+                                    <TextBlock Grid.Row="0" Text="年龄" VerticalAlignment="Center" Margin="0,0,10,10"/>
+                                    <ui:TextBox Grid.Row="0" Grid.Column="1" Margin="0,0,0,10" Text="{Binding CurrentCharacter.Profile.Age}"/>
+                                    <!-- 身高 -->
+                                    <TextBlock Grid.Row="1" Text="身高" VerticalAlignment="Center" Margin="0,0,10,10"/>
+                                    <ui:TextBox Grid.Row="1" Grid.Column="1" Margin="0,0,0,10" Text="{Binding CurrentCharacter.Profile.Height}"/>
+                                    <!-- 体重 -->
+                                    <TextBlock Grid.Row="2" Text="体重" VerticalAlignment="Center" Margin="0,0,10,10"/>
+                                    <ui:TextBox Grid.Row="2" Grid.Column="1" Margin="0,0,0,10" Text="{Binding CurrentCharacter.Profile.Weight}"/>
+                                    <!-- 眼睛 -->
+                                    <TextBlock Grid.Row="3" Text="眼睛" VerticalAlignment="Center" Margin="0,0,10,10"/>
+                                    <ui:TextBox Grid.Row="3" Grid.Column="1" Margin="0,0,0,10" Text="{Binding CurrentCharacter.Profile.Eyes}"/>
+                                    <!-- 皮肤 -->
+                                    <TextBlock Grid.Row="4" Text="皮肤" VerticalAlignment="Center" Margin="0,0,10,10"/>
+                                    <ui:TextBox Grid.Row="4" Grid.Column="1" Margin="0,0,0,10" Text="{Binding CurrentCharacter.Profile.Skin}"/>
+                                    <!-- 头发 -->
+                                    <TextBlock Grid.Row="5" Text="头发" VerticalAlignment="Center"/>
+                                    <ui:TextBox Grid.Row="5" Grid.Column="1" Text="{Binding CurrentCharacter.Profile.Hair}"/>
+                                </Grid>
+                            </StackPanel>
+                        </ui:Card>
+                    </StackPanel>
+
+                    <!-- Col 2: 详细设定 -->
+                    <StackPanel Grid.Column="2">
+                        <!-- 2x2 网格布局 -->
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="15"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <ui:Card Grid.Row="0" Grid.Column="0">
+                                <StackPanel>
+                                    <TextBlock Text="个性" Style="{StaticResource LabelStyle}"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.PersonalityTraits}" AcceptsReturn="True" Height="80" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </ui:Card>
+                            <ui:Card Grid.Row="0" Grid.Column="2">
+                                <StackPanel>
+                                    <TextBlock Text="理想" Style="{StaticResource LabelStyle}"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.Ideals}" AcceptsReturn="True" Height="80" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </ui:Card>
+                            <ui:Card Grid.Row="2" Grid.Column="0">
+                                <StackPanel>
+                                    <TextBlock Text="纽带" Style="{StaticResource LabelStyle}"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.Bonds}" AcceptsReturn="True" Height="80" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </ui:Card>
+                            <ui:Card Grid.Row="2" Grid.Column="2">
+                                <StackPanel>
+                                    <TextBlock Text="缺陷" Style="{StaticResource LabelStyle}"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.Flaws}" AcceptsReturn="True" Height="80" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </ui:Card>
+                        </Grid>
+
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:Card Grid.Column="0">
+                                <StackPanel>
+                                    <TextBlock Text="盟友与组织" Style="{StaticResource LabelStyle}"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.AlliesAndOrganizations}" AcceptsReturn="True" MinHeight="100"/>
+                                </StackPanel>
+                            </ui:Card>
+                            <ui:Card Grid.Column="2">
+                                <StackPanel>
+                                    <TextBlock Text="所持物" Style="{StaticResource LabelStyle}"/>
+                                    <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.Treasure}" AcceptsReturn="True" MinHeight="100"/>
+                                </StackPanel>
+                            </ui:Card>
+                        </Grid>
+
+                        <ui:Card VerticalAlignment="Stretch">
+                            <StackPanel>
+                                <TextBlock Text="背景故事" Style="{StaticResource LabelStyle}"/>
+                                <ui:TextBox Text="{Binding CurrentCharacter.Roleplay.CharacterBackstory}" AcceptsReturn="True" MinHeight="200" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </ui:Card>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- ========================= TAB 5: 施法 ========================= -->
+            <TabItem Header="施法">
+                <Grid Margin="0,15,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 顶部：施法核心数据 -->
+                    <ui:Card Grid.Row="0" Margin="0,0,0,15">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,15,0">
+                                <TextBlock Text="施法职业" Style="{StaticResource LabelStyle}"/>
+                                <ui:TextBox Text="{Binding CurrentCharacter.Spellbook.SpellcastingClass}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="0,0,15,0">
+                                <TextBlock Text="施法关键属性" Style="{StaticResource LabelStyle}"/>
+                                <ui:TextBox Text="{Binding CurrentCharacter.Spellbook.SpellcastingAbility}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="0,0,15,0">
+                                <TextBlock Text="法术豁免难度DC" Style="{StaticResource LabelStyle}"/>
+                                <ui:NumberBox Value="{Binding CurrentCharacter.Spellbook.SpellSaveDC, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="法术攻击加值" Style="{StaticResource LabelStyle}"/>
+                                <ui:NumberBox Value="{Binding CurrentCharacter.Spellbook.SpellAttackBonus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                        </Grid>
+                    </ui:Card>
+
+                    <!-- 列表：0-9环法术 (使用 Converter 修复闪退) -->
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding CurrentCharacter.Spellbook.AllSpells}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <!-- 每一环位是一个卡片 -->
+                                <ui:Card>
+                                    <StackPanel>
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding LevelLabel}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+
+                                            <!-- 修复：使用 IntToVisibilityConverter -->
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right"
+                                                            Visibility="{Binding Level, Converter={StaticResource IntToVisibilityConverter}}">
+                                                <TextBlock Text="总环位:" VerticalAlignment="Center" FontSize="12"/>
+                                                <ui:NumberBox Value="{Binding TotalSlots, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120" Margin="5,0,15,0"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <ItemsControl ItemsSource="{Binding Spells}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,0,10,10" Width="200">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <CheckBox Grid.Column="0" IsChecked="{Binding IsPrepared}" ToolTip="已准备"/>
+                                                        <ui:TextBox Grid.Column="1" Text="{Binding Name}" Margin="5,0,0,0" PlaceholderText="法术名称"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </ui:Card>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Page>
