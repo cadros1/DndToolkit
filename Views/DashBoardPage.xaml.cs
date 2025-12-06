@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DnDToolkit.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,9 +21,10 @@ namespace DnDToolkit.Views
     /// </summary>
     public partial class DashboardPage : Page
     {
-        public DashboardPage()
+        public DashboardPage(DashboardViewModel viewModel)
         {
             InitializeComponent();
+            DataContext = viewModel;
         }
     }
 }
