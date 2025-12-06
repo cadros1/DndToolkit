@@ -13,6 +13,7 @@ using iText.Forms.Fields;
 using iText.IO.Image;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Xobject;
+using iText.Layout.Element;
 
 namespace DnDToolkit.Services
 {
@@ -218,15 +219,7 @@ namespace DnDToolkit.Services
                                 }
                             }
                         }
-
-                        // --- 图片提取 (高级) ---
-                        try
-                        {
-                            ExtractImageFromField(fields, "Character Image", character);
-                        }
-                        catch { /* 图片提取失败不影响整体 */ }
                     }
-
                     return character;
                 }
                 catch (Exception ex)
@@ -385,34 +378,6 @@ namespace DnDToolkit.Services
                         }
                     }
                 }
-
-                // --- 图片导出 ---
-                if (!string.IsNullOrEmpty(character.Profile.PortraitBase64))
-                {
-                    try
-                    {
-                        //byte[] imgBytes = Convert.FromBase64String(character.Profile.PortraitBase64);
-                        //ImageData imageData = ImageDataFactory.Create(imgBytes);
-                        var formField = fields["Character Image"];
-                        if (formField != null)
-                        {
-                            // iText7 设置按钮图标的方式
-                            // 注意：这可能需要具体的 PDF Widget 结构支持，如果是标准 PushButton 应该有效
-                            formField.SetValue(""); // 清空可能的文本
-                            // 设置图片通常涉及修改 Appearance Dictionary (AP)
-                            // 简单方式：使用 iText 的 API 如果支持，或者留白
-                            // 由于 iText7 设置 Button Image 比较复杂，这里尝试通用方法：
-                            // 在许多 AcroForm 实现中，直接设置图片比较困难，需要重建 Widget。
-                            // 这里为了代码稳定性，暂不执行极其复杂的 AP 重写，
-                            // 如果需要，可以使用 PdfButtonFormField.SetImage(image) 
-                            if (formField is PdfButtonFormField buttonField)
-                            {
-                                buttonField.SetImage(character.Profile.PortraitBase64);
-                            }
-                        }
-                    }
-                    catch { /* 图片写入失败忽略 */ }
-                }
             });
         }
 
@@ -465,45 +430,6 @@ namespace DnDToolkit.Services
         {
             if (int.TryParse(val, out int result)) return result;
             return 0;
-        }
-
-        private static void ExtractImageFromField(IDictionary<string, PdfFormField> fields, string key, Character character)
-        {
-            if (!fields.TryGetValue(key, out PdfFormField? field)) return;
-            var widgets = field.GetWidgets();
-            if (widgets == null || widgets.Count == 0) return;
-
-            var widget = widgets[0];
-            var apDict = widget.GetAppearanceDictionary();
-            if (apDict == null) return;
-
-            // 获取 Normal Appearance
-            var normalAp = apDict.GetAsStream(PdfName.N);
-            if (normalAp == null) return;
-
-            // 解析 XObject 资源
-            var resources = normalAp.GetAsDictionary(PdfName.Resources);
-            if (resources == null) return;
-
-            var xObjects = resources.GetAsDictionary(PdfName.XObject);
-            if (xObjects == null) return;
-
-            foreach (var xObjectKey in xObjects.KeySet())
-            {
-                var xObjectStream = xObjects.GetAsStream(xObjectKey);
-                if (xObjectStream != null)
-                {
-                    var subtype = xObjectStream.GetAsName(PdfName.Subtype);
-                    if (subtype != null && subtype.Equals(PdfName.Image))
-                    {
-                        // 找到图片了！
-                        var imageXObject = new PdfImageXObject(xObjectStream);
-                        byte[] imageBytes = imageXObject.GetImageBytes();
-                        character.Profile.PortraitBase64 = Convert.ToBase64String(imageBytes);
-                        break; // 只取第一张
-                    }
-                }
-            }
         }
     }
 }
