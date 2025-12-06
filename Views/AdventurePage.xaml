@@ -17,6 +17,7 @@
         <helpers:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
         <helpers:IntToVisibilityConverter x:Key="IntToVisibilityConverter"/>
         <helpers:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <helpers:SumConverter x:Key="SumConverter"/>
 
         <Style x:Key="LabelStyle" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource ui:TextFillColorSecondaryBrush}"/>
@@ -75,20 +76,58 @@
                 <!-- 生命值 -->
                 <ui:Card Margin="0,0,0,15">
                     <StackPanel>
-                        <TextBlock Text="当前生命值" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <TextBlock Text="当前生命值 / 最大生命值" FontWeight="SemiBold" Margin="0,0,0,5"/>
                         <Grid Margin="0,0,0,5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <ui:NumberBox Grid.Column="0" Value="{Binding CurrentCharacter.Combat.HitPointsCurrent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <ui:NumberBox Grid.Column="0" Value="{Binding CurrentCharacter.Combat.HitPointsCurrent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0"/>
                             <TextBlock Grid.Column="1" Text="/" VerticalAlignment="Center" Margin="5,0"/>
                             <TextBlock Grid.Column="2" Text="{Binding CurrentCharacter.Combat.HitPointsMax}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <TextBlock Text="临时生命值" Grid.Row="1" FontSize="10" Foreground="Gray"/>
+                            <ui:NumberBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" 
+                                          Value="{Binding CurrentCharacter.Combat.HitPointsTemp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0"/>
                         </Grid>
-                        <ProgressBar Value="{Binding CurrentCharacter.Combat.HitPointsCurrent}" 
-                                     Maximum="{Binding CurrentCharacter.Combat.HitPointsMax, FallbackValue=100}" 
-                                     Height="4" Foreground="#FF6B6B"/>
+                        <Grid Height="6" VerticalAlignment="Center">
+                            <!-- 底层：显示 [当前+临时] 总量，颜色为金色 -->
+                            <ProgressBar Foreground="SkyBlue" 
+                                         Background="#E0E0E0" 
+                                         BorderThickness="0">
+                                <ProgressBar.Maximum>
+                                    <MultiBinding Converter="{StaticResource SumConverter}">
+                                        <Binding Path="CurrentCharacter.Combat.HitPointsMax" />
+                                        <Binding Path="CurrentCharacter.Combat.HitPointsTemp" />
+                                    </MultiBinding>
+                                </ProgressBar.Maximum>
+                                <ProgressBar.Value>
+                                    <MultiBinding Converter="{StaticResource SumConverter}">
+                                        <Binding Path="CurrentCharacter.Combat.HitPointsCurrent" />
+                                        <Binding Path="CurrentCharacter.Combat.HitPointsTemp" />
+                                    </MultiBinding>
+                                </ProgressBar.Value>
+                            </ProgressBar>
+
+                            <!-- 顶层：显示 [当前HP]，背景透明以便透出底层的金色 -->
+                            <ProgressBar Value="{Binding CurrentCharacter.Combat.HitPointsCurrent}" 
+                                         Foreground="#FF6B6B" 
+                                         Background="Transparent" 
+                                         BorderThickness="0">
+                                <ProgressBar.Maximum>
+                                    <MultiBinding Converter="{StaticResource SumConverter}">
+                                        <Binding Path="CurrentCharacter.Combat.HitPointsMax" />
+                                        <Binding Path="CurrentCharacter.Combat.HitPointsTemp" />
+                                    </MultiBinding>
+                                </ProgressBar.Maximum>
+                            </ProgressBar>
+                        </Grid>
+
                     </StackPanel>
                 </ui:Card>
 

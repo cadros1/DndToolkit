@@ -95,4 +95,24 @@ namespace DnDToolkit.Helpers
             throw new NotImplementedException();
         }
     }
+
+    public class SumConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            double sum = 0;
+            foreach (var value in values)
+            {
+                if (value is int i) sum += i;
+                else if (value is double d) sum += d;
+                else if (value is string s && double.TryParse(s, out double res)) sum += res;
+            }
+            return sum;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
