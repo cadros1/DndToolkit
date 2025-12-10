@@ -13,7 +13,7 @@
 
 ## 其它平台
 
-这是DnDToolkit的Flutter版本，设计为Android平台使用。以下是其它平台的版本：
+这是DnDToolkit的WPF版本，设计为Windows平台使用。以下是其它平台的版本：
 
 - [Windows](https://github.com/cadros1/DndToolkit) - 使用WPF开发
 - [Android](https://github.com/cadros1/dndtoolkit_flutter) - 使用Flutter开发
