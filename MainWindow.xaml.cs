@@ -23,7 +23,8 @@ namespace DnDToolkit
     {
         public MainWindow(
             MainWindowViewModel viewModel,
-            INavigationService navigationService
+            INavigationService navigationService,
+            ISnackbarService snackbarService
             )
         {
             InitializeComponent();
@@ -40,6 +41,8 @@ namespace DnDToolkit
 
             // 2. 导航到首页
             Loaded += (_, _) => navigationService.Navigate(typeof(DashboardPage));
+
+            snackbarService.SetSnackbarPresenter(SnackbarPresenter);
         }
     }
 }
