@@ -38,6 +38,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -60,6 +61,15 @@
 
             <TextBlock Grid.Column="1" Text="暂无角色" Foreground="#FF6B6B" VerticalAlignment="Center" Margin="15,0,0,0"
                        Visibility="{Binding AllCharacters.Count, Converter={StaticResource IntToVisibilityConverter}, ConverterParameter=Inverse}"/>
+
+            <!-- 右侧：保存按钮 -->
+            <!-- 仅当选中了角色时显示 (绑定 CurrentCharacter 的可见性) -->
+            <ui:Button Grid.Column="2" 
+                       Content="保存状态" 
+                       Icon="{ui:SymbolIcon Save24}" 
+                       Appearance="Primary"
+                       Command="{Binding SaveStateCommand}"
+                       Visibility="{Binding AllCharacters.Count, Converter={StaticResource IntToVisibilityConverter}}"/>
         </Grid>
 
         <!-- 2. 两栏式内容 (移除右侧栏) -->

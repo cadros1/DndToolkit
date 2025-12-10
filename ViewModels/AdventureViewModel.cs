@@ -11,6 +11,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using Wpf.Ui;
+using Wpf.Ui.Controls;
+using Wpf.Ui.Extensions;
 
 namespace DnDToolkit.ViewModels
 {
@@ -27,6 +31,7 @@ namespace DnDToolkit.ViewModels
     public partial class AdventureViewModel : ObservableObject
     {
         private readonly ICharacterService _characterService;
+        private readonly ISnackbarService _snackbarService;
 
         // === 角色选择 ===
         [ObservableProperty] private ObservableCollection<Character> allCharacters = new();
@@ -79,9 +84,10 @@ namespace DnDToolkit.ViewModels
         public ObservableCollection<int> DiceOptions { get; } = new() { 4, 6, 8, 10, 12, 20, 100 };
         [ObservableProperty] private ObservableCollection<RollLogEntry> rollLogs = new();
 
-        public AdventureViewModel(ICharacterService characterService)
+        public AdventureViewModel(ICharacterService characterService, ISnackbarService snackbarService)
         {
             _characterService = characterService;
+            _snackbarService = snackbarService;
         }
 
         public async Task RefreshDataAsync()
@@ -227,6 +233,32 @@ namespace DnDToolkit.ViewModels
         private void SetFreeMode()
         {
             SelectedAction = FreeRollOption;
+        }
+
+        // === 保存当前状态 ===
+        [RelayCommand]
+        private async Task SaveState()
+        {
+            if (CurrentCharacter == null) return;
+
+            try
+            {
+                await _characterService.SaveCharacterAsync(CurrentCharacter);
+
+                // === 弹出无打断提示 ===
+                _snackbarService.Show(
+                    "保存成功",
+                    $"{CurrentCharacter.Profile.CharacterName} 的状态已更新。",
+                    ControlAppearance.Success, // 绿色成功样式
+                    new SymbolIcon(SymbolRegular.Save24),
+                    TimeSpan.FromSeconds(2) // 2秒后自动消失
+                );
+            }
+            catch (Exception ex)
+            {
+                // 出错时还是要弹强提示，或者用红色 Snackbar
+                _snackbarService.Show("保存失败", ex.Message, ControlAppearance.Danger);
+            }
         }
 
         // 辅助方法：获取属性调整值
