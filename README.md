@@ -17,3 +17,13 @@
 
 - [Windows](https://github.com/cadros1/DndToolkit) - 使用WPF开发
 - [Android](https://github.com/cadros1/dndtoolkit_flutter) - 使用Flutter开发
+
+## 更新日志
+
+### v1.1.0
+
+“冒险”页新增角色状态保存功能
+新增“资源中心”页
+
+### v1.0.0
+发布第一个正式版本
