@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui;
+using Wpf.Ui.Extensions;
 
 namespace DnDToolkit.ViewModels
 {
@@ -20,16 +21,20 @@ namespace DnDToolkit.ViewModels
         private readonly ICharacterService _characterService;
         private readonly INavigationService _navigationService;
         private readonly PdfDataService _pdfDataService;
+        private readonly ISnackbarService _snackbarService;
 
         [ObservableProperty]
         private ObservableCollection<Character> characters = new();
 
-        public CharacterListViewModel(ICharacterService characterService, INavigationService navigationService, PdfDataService pdfDataService)
+        public CharacterListViewModel(ICharacterService characterService, 
+                                      INavigationService navigationService, 
+                                      PdfDataService pdfDataService,
+                                      ISnackbarService snackbarService)
         {
             _characterService = characterService;
             _navigationService = navigationService;
             _pdfDataService = pdfDataService;
-
+            _snackbarService = snackbarService;
         }
 
         // 页面加载时调用此方法刷新数据
@@ -82,6 +87,17 @@ namespace DnDToolkit.ViewModels
         [RelayCommand]
         private async Task Import()
         {
+            var result = MessageBox.Show(
+                "导入功能仅能正确读取本软件提供的角色卡PDF。\n" +
+                "在“更多 -> 资源中心”下载角色卡PDF。\n" +
+                "是否继续导入？",
+                "导入须知",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Information);
+
+            // 如果用户选了“否”，直接返回
+            if (result != MessageBoxResult.OK) return;
+
             // 1. 调用服务读取 PDF
             var character = await _pdfDataService.ImportCharacterPdfAsync();
 
@@ -93,7 +109,7 @@ namespace DnDToolkit.ViewModels
                 // 3. 添加到界面列表
                 Characters.Add(character);
 
-                MessageBox.Show($"角色“{character.Profile.CharacterName}”导入成功！", "成功");
+                _snackbarService.Show("成功", "导入角色成功！", Wpf.Ui.Controls.ControlAppearance.Info, TimeSpan.FromSeconds(2));
             }
         }
 
