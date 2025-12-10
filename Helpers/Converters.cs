@@ -96,6 +96,54 @@ namespace DnDToolkit.Helpers
         }
     }
 
+    public class InverseBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool boolValue)
+            {
+                return !boolValue;
+            }
+
+            return true;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class BooleanToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool boolValue)
+            {
+                // 检查是否有 "Inverse" 参数
+                bool isInverse = parameter is string str && str.Equals("Inverse", StringComparison.OrdinalIgnoreCase);
+
+                if (isInverse)
+                {
+                    // 反转逻辑：是 false 就显示，不是 false 就隐藏
+                    return boolValue ? Visibility.Collapsed : Visibility.Visible;
+                }
+                else
+                {
+                    // 默认逻辑：是 false 就隐藏，不是 false 就显示
+                    return boolValue ? Visibility.Visible : Visibility.Collapsed;
+                }
+            }
+
+            return Visibility.Visible;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class SumConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
