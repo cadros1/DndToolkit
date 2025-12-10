@@ -29,24 +29,16 @@
                            IsPaneOpen="False">
 
             <ui:NavigationView.MenuItems>
-                <!-- TargetPageType 指向 Code-behind 的类型 -->
-                <ui:NavigationViewItem Content="首页" 
-                                       Icon="{ui:SymbolIcon Home24}" 
-                                       TargetPageType="{x:Type views:DashboardPage}" />
-
                 <ui:NavigationViewItem Content="角色卡" 
                                        Icon="{ui:SymbolIcon People24}" 
                                        TargetPageType="{x:Type views:CharacterListPage}" />
                 <ui:NavigationViewItem Content="冒险"
                                        Icon="{ui:SymbolIcon Map24}"
                                        TargetPageType="{x:Type views:AdventurePage}"/>
-            </ui:NavigationView.MenuItems>
-            <!-- 底部菜单项 -->
-            <ui:NavigationView.FooterMenuItems>
                 <ui:NavigationViewItem Content="更多" 
                                Icon="{ui:SymbolIcon MoreHorizontal24}" 
                                TargetPageType="{x:Type views:MorePage}" />
-            </ui:NavigationView.FooterMenuItems>
+            </ui:NavigationView.MenuItems>
         </ui:NavigationView>
 
         <ui:SnackbarPresenter x:Name="SnackbarPresenter" 

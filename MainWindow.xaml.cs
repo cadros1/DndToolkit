@@ -40,7 +40,7 @@ namespace DnDToolkit
             // 这些工作现在由 INavigationViewPageProvider 在幕后通过 NavigationService 处理
 
             // 2. 导航到首页
-            Loaded += (_, _) => navigationService.Navigate(typeof(DashboardPage));
+            Loaded += (_, _) => navigationService.Navigate(typeof(CharacterListPage));
 
             snackbarService.SetSnackbarPresenter(SnackbarPresenter);
         }

@@ -48,7 +48,6 @@ namespace DnDToolkit
 
                     // --- ViewModels ---
                     services.AddSingleton<MainWindowViewModel>();
-                    services.AddSingleton<DashboardViewModel>();
                     services.AddSingleton<CharacterListViewModel>();
                     services.AddSingleton<EditorViewModel>();
                     services.AddSingleton<AdventureViewModel>();
@@ -57,7 +56,6 @@ namespace DnDToolkit
 
                     // --- Windows & Pages ---
                     services.AddSingleton<MainWindow>();
-                    services.AddSingleton<DashboardPage>();
                     services.AddSingleton<CharacterListPage>();
                     services.AddSingleton<EditorPage>();
                     services.AddSingleton<AdventurePage>();
