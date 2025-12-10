@@ -22,6 +22,13 @@
                     <TextBlock Text="下载规则书、角色卡模板等文件" Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="12"/>
                 </StackPanel>
             </ui:CardAction>
+            <ui:CardAction Icon="{ui:SymbolIcon Info24}"
+               Command="{Binding GoToAboutCommand}">
+                <StackPanel>
+                    <TextBlock Text="关于与更新" FontWeight="SemiBold"/>
+                    <TextBlock Text="检查版本更新、查看软件信息" Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="12"/>
+                </StackPanel>
+            </ui:CardAction>
         </StackPanel>
     </Grid>
 </Page>

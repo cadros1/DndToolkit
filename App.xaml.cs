@@ -45,6 +45,7 @@ namespace DnDToolkit
                     services.AddSingleton<ICharacterService, CharacterService>();
                     services.AddSingleton<PdfDataService>();
                     services.AddSingleton<ResourceService>();
+                    services.AddSingleton<UpdateService>();
 
                     // --- ViewModels ---
                     services.AddSingleton<MainWindowViewModel>();
@@ -53,6 +54,7 @@ namespace DnDToolkit
                     services.AddSingleton<AdventureViewModel>();
                     services.AddSingleton<MoreViewModel>();
                     services.AddSingleton<ResourcesViewModel>();
+                    services.AddSingleton<AboutViewModel>();
 
                     // --- Windows & Pages ---
                     services.AddSingleton<MainWindow>();
@@ -61,6 +63,7 @@ namespace DnDToolkit
                     services.AddSingleton<AdventurePage>();
                     services.AddSingleton<MorePage>();
                     services.AddSingleton<ResourcesPage>();
+                    services.AddSingleton<AboutPage>();
                 })
                 .Build();
 

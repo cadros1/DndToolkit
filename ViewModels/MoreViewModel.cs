@@ -19,5 +19,11 @@ namespace DnDToolkit.ViewModels
             // 跳转到资源页
             _navigationService.Navigate(typeof(Views.ResourcesPage));
         }
+
+        [RelayCommand]
+        private void GoToAbout()
+        {
+            _navigationService.Navigate(typeof(Views.AboutPage));
+        }
     }
 }
