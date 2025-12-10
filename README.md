@@ -10,3 +10,10 @@
 - [x] 角色状态记录
 - [ ] 在不同设备间传递角色卡
 - [ ] 多人联机冒险
+
+## 其它平台
+
+这是DnDToolkit的Flutter版本，设计为Android平台使用。以下是其它平台的版本：
+
+- [Windows](https://github.com/cadros1/DndToolkit) - 使用WPF开发
+- [Android](https://github.com/cadros1/dndtoolkit_flutter) - 使用Flutter开发
