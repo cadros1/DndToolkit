@@ -41,7 +41,12 @@
                                        Icon="{ui:SymbolIcon Map24}"
                                        TargetPageType="{x:Type views:AdventurePage}"/>
             </ui:NavigationView.MenuItems>
-
+            <!-- 底部菜单项 -->
+            <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem Content="更多" 
+                               Icon="{ui:SymbolIcon MoreHorizontal24}" 
+                               TargetPageType="{x:Type views:MorePage}" />
+            </ui:NavigationView.FooterMenuItems>
         </ui:NavigationView>
 
         <ui:SnackbarPresenter x:Name="SnackbarPresenter" 
