@@ -46,6 +46,7 @@ namespace DnDToolkit
                     services.AddSingleton<PdfDataService>();
                     services.AddSingleton<ResourceService>();
                     services.AddSingleton<UpdateService>();
+                    services.AddSingleton<LanSyncService>();
 
                     // --- ViewModels ---
                     services.AddSingleton<MainWindowViewModel>();
@@ -55,6 +56,7 @@ namespace DnDToolkit
                     services.AddSingleton<MoreViewModel>();
                     services.AddSingleton<ResourcesViewModel>();
                     services.AddSingleton<AboutViewModel>();
+                    services.AddSingleton<SyncViewModel>();
 
                     // --- Windows & Pages ---
                     services.AddSingleton<MainWindow>();
@@ -64,6 +66,7 @@ namespace DnDToolkit
                     services.AddSingleton<MorePage>();
                     services.AddSingleton<ResourcesPage>();
                     services.AddSingleton<AboutPage>();
+                    services.AddSingleton<SyncPage>();
                 })
                 .Build();
 

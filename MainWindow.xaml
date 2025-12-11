@@ -35,9 +35,12 @@
                 <ui:NavigationViewItem Content="冒险"
                                        Icon="{ui:SymbolIcon Map24}"
                                        TargetPageType="{x:Type views:AdventurePage}"/>
+                <ui:NavigationViewItem Content="移动设备"
+                                       Icon="{ui:SymbolIcon PhoneDesktop24}"
+                                       TargetPageType="{x:Type views:SyncPage}"/>
                 <ui:NavigationViewItem Content="更多" 
-                               Icon="{ui:SymbolIcon MoreHorizontal24}" 
-                               TargetPageType="{x:Type views:MorePage}" />
+                                       Icon="{ui:SymbolIcon MoreHorizontal24}" 
+                                       TargetPageType="{x:Type views:MorePage}" />
             </ui:NavigationView.MenuItems>
         </ui:NavigationView>
 
