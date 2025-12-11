@@ -8,6 +8,7 @@
       xmlns:vm="clr-namespace:DnDToolkit.ViewModels"
       xmlns:helper="clr-namespace:DnDToolkit.Helpers"
       mc:Ignorable="d" 
+      d:DesignHeight="702" d:DesignWidth="1080"
       d:DataContext="{d:DesignInstance vm:AboutViewModel}"
       Title="AboutPage">
 
@@ -17,10 +18,10 @@
     </Page.Resources>
 
     <Grid Margin="30">
-        <StackPanel MaxWidth="600" HorizontalAlignment="Left">
+        <StackPanel HorizontalAlignment="Stretch">
 
             <TextBlock Text="关于 DnD Toolkit" FontSize="28" FontWeight="Bold"/>
-            <TextBlock Text="一个现代化的 DnD 5E 跑团辅助工具" Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="16"/>
+            <TextBlock Text="现代化的 DnD 5E 跑团辅助工具" Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="16"/>
 
             <!-- 版本信息卡片 -->
             <ui:Card Margin="0,20,0,0">
@@ -43,7 +44,6 @@
                                    Content="检查更新"
                                    Command="{Binding CheckUpdateCommand}"
                                    IsEnabled="{Binding IsChecking, Converter={StaticResource InverseBoolConverter}}"/>
-                        <!-- 注意：如果没有 InverseBoolConverter，可以用 IsChecking=False 时的 Loading 动画代替 -->
                     </Grid>
 
                     <TextBlock Text="{Binding UpdateStatus}" Foreground="{DynamicResource SystemAccentColorBrush}"/>
