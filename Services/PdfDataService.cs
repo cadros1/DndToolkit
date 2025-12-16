@@ -5,27 +5,23 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
-using Microsoft.Win32; // 用于文件选择对话框
-using DnDToolkit.Helpers;
+using Microsoft.Win32;
 using DnDToolkit.Models;
-using iText.Forms;
-using iText.Forms.Fields;
-using iText.IO.Image;
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Xobject;
-using iText.Layout.Element;
+using PdfSharp.Pdf;
+using PdfSharp.Pdf.AcroForms;
+using PdfSharp.Pdf.IO;
 
 namespace DnDToolkit.Services
 {
     public class PdfDataService
     {
-        // 技能中文名到属性名的映射
+        // 技能映射表
         private readonly Dictionary<string, string> _skillMap = new()
         {
             { "运动", nameof(Proficiencies.Athletics) },
-            { "杂技", nameof(Proficiencies.Acrobatics) }, // PDF中叫杂技，对应体操
+            { "杂技", nameof(Proficiencies.Acrobatics) },
             { "巧手", nameof(Proficiencies.SleightOfHand) },
-            { "躲藏", nameof(Proficiencies.Stealth) }, // PDF中叫躲藏，对应隐匿
+            { "躲藏", nameof(Proficiencies.Stealth) },
             { "奥秘", nameof(Proficiencies.Arcana) },
             { "历史", nameof(Proficiencies.History) },
             { "调查", nameof(Proficiencies.Investigation) },
@@ -42,8 +38,8 @@ namespace DnDToolkit.Services
             { "游说", nameof(Proficiencies.Persuasion) }
         };
 
-        // 属性简写映射
-        private readonly Dictionary<string, string> _attrMap = new()
+        // 豁免属性映射表
+        private readonly Dictionary<string, string> _saveMap = new()
         {
             { "STR", nameof(Proficiencies.StrengthSave) },
             { "DEX", nameof(Proficiencies.DexteritySave) },
@@ -58,7 +54,6 @@ namespace DnDToolkit.Services
         /// </summary>
         public async Task<Character?> ImportCharacterPdfAsync()
         {
-            // 1. 选择文件
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
                 Filter = "PDF Files (*.pdf)|*.pdf",
@@ -66,7 +61,6 @@ namespace DnDToolkit.Services
             };
 
             if (openFileDialog.ShowDialog() != true) return null;
-
             string filePath = openFileDialog.FileName;
 
             return await Task.Run(() =>
@@ -75,147 +69,142 @@ namespace DnDToolkit.Services
                 {
                     var character = new Character();
 
-                    using (PdfReader reader = new PdfReader(filePath))
-                    using (PdfDocument pdfDoc = new PdfDocument(reader))
+                    // 只读模式打开
+                    using (PdfDocument document = PdfReader.Open(filePath, PdfDocumentOpenMode.Modify))
                     {
-                        PdfAcroForm form = PdfAcroForm.GetAcroForm(pdfDoc, false);
+                        var form = document.AcroForm;
                         if (form == null) return null;
 
-                        IDictionary<string, PdfFormField> fields = form.GetAllFormFields();
-
                         // --- 基础信息 ---
-                        character.Profile.CharacterName = GetString(fields, "CharacterName");
-                        character.Profile.PlayerName = GetString(fields, "PlayerName");
-                        character.Profile.Race = GetString(fields, "Race"); // PDF字段中有个空格 "Race "，需要Trim
-                        character.Profile.ClassAndLevel = GetString(fields, "ClassLevel");
-                        character.Profile.Background = GetString(fields, "Background");
-                        character.Profile.Alignment = GetString(fields, "Alignment");
-                        character.Profile.ExperiencePoints = ParseInt(GetString(fields, "XP"));
+                        var p = character.Profile;
+                        p.CharacterName = GetText(form, "CharacterName");
+                        p.PlayerName = GetText(form, "PlayerName");
+                        p.Race = GetText(form, "Race ");
+                        p.ClassAndLevel = GetText(form, "ClassLevel");
+                        p.Background = GetText(form, "Background");
+                        p.Alignment = GetText(form, "Alignment");
+                        p.ExperiencePoints = ParseInt(GetText(form, "XP"));
 
-                        character.Profile.Age = GetString(fields, "Age");
-                        character.Profile.Height = GetString(fields, "Height");
-                        character.Profile.Weight = GetString(fields, "Weight");
-                        character.Profile.Eyes = GetString(fields, "Eyes");
-                        character.Profile.Skin = GetString(fields, "Skin");
-                        character.Profile.Hair = GetString(fields, "Hair");
-                        character.Roleplay.PersonalityTraits = GetString(fields, "PersonalityTraits"); // PDF结尾有空格
-                        character.Roleplay.Ideals = GetString(fields, "Ideals");
-                        character.Roleplay.Bonds = GetString(fields, "Bonds");
-                        character.Roleplay.Flaws = GetString(fields, "Flaws");
-                        character.Roleplay.CharacterExperience = GetString(fields, "角色经历");
-                        character.Roleplay.CharacterBackstory = GetString(fields, "Backstory");
-                        character.Roleplay.AlliesAndOrganizations = GetString(fields, "Allies");
-                        character.Roleplay.Treasure = GetString(fields, "Treasure");
-                        character.Roleplay.FeaturesAndTraits = GetString(fields, "Feat+Traits");
+                        p.Age = GetText(form, "Age");
+                        p.Height = GetText(form, "Height");
+                        p.Weight = GetText(form, "Weight");
+                        p.Eyes = GetText(form, "Eyes");
+                        p.Skin = GetText(form, "Skin");
+                        p.Hair = GetText(form, "Hair");
 
-                        // --- 属性 (读取值) ---
-                        character.Attributes.Strength = ParseInt(GetString(fields, "STR"));
-                        character.Attributes.Dexterity = ParseInt(GetString(fields, "DEX"));
-                        character.Attributes.Constitution = ParseInt(GetString(fields, "CON"));
-                        character.Attributes.Intelligence = ParseInt(GetString(fields, "INT"));
-                        character.Attributes.Wisdom = ParseInt(GetString(fields, "WIS"));
-                        character.Attributes.Charisma = ParseInt(GetString(fields, "CHA"));
+                        var r = character.Roleplay;
+                        r.PersonalityTraits = GetText(form, "PersonalityTraits ");
+                        r.Ideals = GetText(form, "Ideals");
+                        r.Bonds = GetText(form, "Bonds");
+                        r.Flaws = GetText(form, "Flaws");
+                        r.CharacterExperience = GetText(form, "角色经历");
+                        r.CharacterBackstory = GetText(form, "Backstory");
+                        r.AlliesAndOrganizations = GetText(form, "Allies");
+                        r.Treasure = GetText(form, "Treasure");
+                        r.FeaturesAndTraits = GetText(form, "Feat+Traits");
 
-                        // --- 熟练项 (Check Box) ---
-                        // 1. 技能
+                        // --- 属性 ---
+                        var a = character.Attributes;
+                        a.Strength = ParseInt(GetText(form, "STR"));
+                        a.Dexterity = ParseInt(GetText(form, "DEX"));
+                        a.Constitution = ParseInt(GetText(form, "CON"));
+                        a.Intelligence = ParseInt(GetText(form, "INT"));
+                        a.Wisdom = ParseInt(GetText(form, "WIS"));
+                        a.Charisma = ParseInt(GetText(form, "CHA"));
+
+                        // --- 熟练项 ---
                         foreach (var kvp in _skillMap)
                         {
-                            bool isProf = GetBool(fields, $"Check Box {kvp.Key}");
-                            // 反射赋值
-                            var prop = typeof(Proficiencies).GetProperty(kvp.Value);
-                            if (prop != null) prop.SetValue(character.Proficiencies, isProf);
+                            bool isProf = GetBool(form, $"Check Box {kvp.Key}");
+                            typeof(Proficiencies).GetProperty(kvp.Value)?.SetValue(character.Proficiencies, isProf);
                         }
-                        // 2. 豁免
-                        foreach (var kvp in _attrMap)
+                        foreach (var kvp in _saveMap)
                         {
-                            bool isProf = GetBool(fields, $"Check Box {kvp.Key}");
-                            var prop = typeof(Proficiencies).GetProperty(kvp.Value);
-                            if (prop != null) prop.SetValue(character.Proficiencies, isProf);
+                            bool isProf = GetBool(form, $"Check Box {kvp.Key}");
+                            typeof(Proficiencies).GetProperty(kvp.Value)?.SetValue(character.Proficiencies, isProf);
                         }
-                        // 3. 其他
-                        character.Profile.ProficiencyBonus = ParseInt(GetString(fields, "ProfBonus"));
-                        character.Profile.PassivePerception = ParseInt(GetString(fields, "Passive Perception"));
-                        character.Profile.Inspiration = GetString(fields, "Inspiration");
-                        character.Proficiencies.OtherProficienciesAndLanguages = GetString(fields, "ProficienciesLang");
+
+                        // 其他
+                        // 熟练加值
+                        p.ProficiencyBonus = ParseInt(GetText(form, "ProfBonus"));
+
+                        // 被动感知
+                        p.PassivePerception = ParseInt(GetText(form, "Passive Perception"));
+                        p.Inspiration = GetText(form, "Inspiration");
+                        character.Proficiencies.OtherProficienciesAndLanguages = GetText(form, "ProficienciesLang");
 
                         // --- 战斗数据 ---
-                        character.Combat.ArmorClass = ParseInt(GetString(fields, "AC"));
-                        character.Combat.Initiative = ParseInt(GetString(fields, "Initiative"));
-                        character.Combat.Speed = GetString(fields, "Speed");
-                        character.Combat.AttacksAndSpellcastingNotes = GetString(fields, "AttacksAndSpellcasting");
-                        character.Combat.Ability = GetString(fields, "Ability");
+                        var c = character.Combat;
+                        // AC, 先攻
+                        c.ArmorClass = ParseInt(GetText(form, "AC"));
+                        c.Initiative = ParseInt(GetText(form, "Initiative"));
+                        c.Speed = GetText(form, "Speed");
+                        c.AttacksAndSpellcastingNotes = GetText(form, "AttacksAndSpellcasting");
+                        c.Ability = GetText(form, "Ability");
 
-                        // 生命值 (Current 读取 Max)
-                        int hpMax = ParseInt(GetString(fields, "HPMax"));
-                        character.Combat.HitPointsMax = hpMax;
-                        character.Combat.HitPointsCurrent = hpMax;
-                        character.Combat.HitPointsTemp = ParseInt(GetString(fields, "HPTemp"));
+                        // 生命值/生命骰
+                        int hpMax = ParseInt(GetText(form, "HPMax"));
+                        c.HitPointsMax = hpMax;
+                        c.HitPointsCurrent = hpMax; // 导入时默认填满
+                        c.HitPointsTemp = ParseInt(GetText(form, "HPTemp"));
+                        c.HitDiceTotal = GetText(form, "HDTotal");
+                        c.HitDiceCurrent = GetText(form, "HDTotal");
 
-                        // 生命骰 (Current 读取 Total)
-                        string hdTotal = GetString(fields, "HDTotal");
-                        character.Combat.HitDiceTotal = hdTotal;
-                        character.Combat.HitDiceCurrent = hdTotal;
-
-                        character.Inventory.EquipmentText = GetString(fields, "Equipment");
-                        character.Inventory.CP = ParseInt(GetString(fields, "CP"));
-                        character.Inventory.SP = ParseInt(GetString(fields, "SP"));
-                        character.Inventory.EP = ParseInt(GetString(fields, "EP"));
-                        character.Inventory.GP = ParseInt(GetString(fields, "GP"));
-                        character.Inventory.PP = ParseInt(GetString(fields, "PP"));
+                        // 钱币
+                        var i = character.Inventory;
+                        i.EquipmentText = GetText(form, "Equipment");
+                        i.CP = ParseInt(GetText(form, "CP"));
+                        i.SP = ParseInt(GetText(form, "SP"));
+                        i.EP = ParseInt(GetText(form, "EP"));
+                        i.GP = ParseInt(GetText(form, "GP"));
+                        i.PP = ParseInt(GetText(form, "PP"));
 
                         // --- 武器 ---
                         character.Weapons.Clear();
-                        for (int i = 1; i <= 3; i++)
+                        for (int idx = 1; idx <= 3; idx++)
                         {
-                            string name = GetString(fields, $"Wpn Name {i}");
+                            string name = GetText(form, $"Wpn Name {idx}");
                             if (!string.IsNullOrWhiteSpace(name))
                             {
                                 character.Weapons.Add(new Weapon
                                 {
                                     Name = name,
-                                    AttackBonus = ParseInt(GetString(fields, $"Wpn1 AtkBonus".Replace("1", i.ToString()))), // PDF命名不一致修正? 假设逻辑
-                                    Damage = GetString(fields, $"Wpn1 Damage".Replace("1", i.ToString()))
+                                    AttackBonus = ParseInt(GetText(form, $"Wpn{idx} AtkBonus")),
+                                    Damage = GetText(form, $"Wpn{idx} Damage")
                                 });
                             }
                         }
-                        // PDF 命名 quirk: Wpn1, Wpn2, Wpn3
-                        // 你的列表显示: Wpn Name 1, Wpn1 AtkBonus... Wpn2 AtkBonus...
 
                         // --- 法术 ---
-                        character.Spellbook.SpellcastingClass = GetString(fields, "Spellcasting Class");
-                        character.Spellbook.SpellcastingAbility = GetString(fields, "SpellcastingAbility");
-                        character.Spellbook.SpellSaveDC = ParseInt(GetString(fields, "SpellSaveDC"));
-                        character.Spellbook.SpellAttackBonus = ParseInt(GetString(fields, "SpellAtkBonus"));
+                        var s = character.Spellbook;
+                        s.SpellcastingClass = GetText(form, "Spellcasting Class");
+                        s.SpellcastingAbility = GetText(form, "SpellcastingAbility");
+                        s.SpellSaveDC = ParseInt(GetText(form, "SpellSaveDC"));
+                        s.SpellAttackBonus = ParseInt(GetText(form, "SpellAtkBonus"));
 
-                        // 读取法术列表
-                        // 0环: 001-008, 1环: 101-112 ... 
-
-                        // 实际遍历PDF字段
                         for (int level = 0; level <= 9; level++)
                         {
-                            var levelGroup = character.Spellbook.AllSpells[level];
-                            // 读取法术位总量 (用于Current)
+                            var group = s.AllSpells[level];
                             if (level > 0)
                             {
-                                string totalSlots = GetString(fields, $"SlotsTotal {level}");
-                                levelGroup.TotalSlots = ParseInt(totalSlots);
-                                levelGroup.RemainSlots = levelGroup.TotalSlots;
+                                int totalSlots = ParseInt(GetText(form, $"SlotsTotal {level}"));
+                                group.TotalSlots = totalSlots;
+                                group.RemainSlots = totalSlots; // 导入时填满
                             }
 
-                            // 读取每一个法术行
-                            int count = levelGroup.Spells.Count;
-                            for (int i = 0; i < count; i++)
+                            // 法术列表
+                            for (int k = 0; k < group.Spells.Count; k++)
                             {
-                                int pdfIndex = i + 1;
-                                string suffix = $"{level}{pdfIndex:D2}"; // e.g. 001, 112, 203
+                                int pdfIndex = k + 1;
+                                string suffix = $"{level}{pdfIndex:D2}";
 
-                                string spellName = GetString(fields, $"Spells {suffix}");
-                                bool prepared = GetBool(fields, $"Check Box S{suffix}");
+                                string spellName = GetText(form, $"Spells {suffix}");
+                                bool prepared = GetBool(form, $"Check Box S{suffix}");
 
                                 if (!string.IsNullOrWhiteSpace(spellName))
                                 {
-                                    levelGroup.Spells[i].Name = spellName;
-                                    levelGroup.Spells[i].IsPrepared = prepared;
+                                    group.Spells[k].Name = spellName;
+                                    group.Spells[k].IsPrepared = prepared;
                                 }
                             }
                         }
@@ -242,187 +231,207 @@ namespace DnDToolkit.Services
             };
 
             if (saveFileDialog.ShowDialog() != true) return;
-
             string outputPath = saveFileDialog.FileName;
 
             await Task.Run(() =>
             {
-                // 1. 获取嵌入的模板
                 var assembly = Assembly.GetExecutingAssembly();
                 var resourceName = assembly.GetManifestResourceNames()
-                    .FirstOrDefault(n => n.EndsWith("Character.pdf", StringComparison.OrdinalIgnoreCase)) ?? throw new FileNotFoundException("Character.pdf template not found.");
-                using Stream templateStream = assembly.GetManifestResourceStream(resourceName) ?? throw new FileNotFoundException("读取嵌入模板失败");
-                using PdfReader reader = new PdfReader(templateStream);
-                using PdfWriter writer = new PdfWriter(outputPath);
-                using PdfDocument pdfDoc = new PdfDocument(reader, writer);
-                PdfAcroForm form = PdfAcroForm.GetAcroForm(pdfDoc, true);
-                IDictionary<string, PdfFormField> fields = form.GetAllFormFields();
+                    .FirstOrDefault(n => n.EndsWith("Character.pdf", StringComparison.OrdinalIgnoreCase));
+
+                if (resourceName == null) throw new FileNotFoundException("Character.pdf template not found.");
+
+                using Stream templateStream = assembly.GetManifestResourceStream(resourceName)!;
+                using PdfDocument document = PdfReader.Open(templateStream, PdfDocumentOpenMode.Modify);
+
+                var form = document.AcroForm;
+
+                // --- 关键：设置 NeedAppearances ---
+                if (form.Elements.ContainsKey("/NeedAppearances"))
+                {
+                    form.Elements["/NeedAppearances"] = new PdfBoolean(true);
+                }
+                else
+                {
+                    form.Elements.Add("/NeedAppearances", new PdfBoolean(true));
+                }
 
                 // --- 基础 ---
-                SetField(fields, "CharacterName", character.Profile.CharacterName);
-                SetField(fields, "CharacterName 2", character.Profile.CharacterName);
-                SetField(fields, "Character Image Name", character.Profile.CharacterName);
-                SetField(fields, "PlayerName", character.Profile.PlayerName);
-                SetField(fields, "Race ", character.Profile.Race); // 注意空格
-                SetField(fields, "ClassLevel", character.Profile.ClassAndLevel);
-                SetField(fields, "Background", character.Profile.Background);
-                SetField(fields, "Alignment", character.Profile.Alignment);
-                SetField(fields, "XP", character.Profile.ExperiencePoints.ToString());
+                var p = character.Profile;
+                SetText(form, "CharacterName", p.CharacterName);
+                SetText(form, "CharacterName 2", p.CharacterName);
+                SetText(form, "Character Image Name", p.CharacterName);
+                SetText(form, "PlayerName", p.PlayerName);
+                SetText(form, "Race ", p.Race);
+                SetText(form, "ClassLevel", p.ClassAndLevel);
+                SetText(form, "Background", p.Background);
+                SetText(form, "Alignment", p.Alignment);
+                SetText(form, "XP", p.ExperiencePoints.ToString());
 
-                SetField(fields, "Age", character.Profile.Age);
-                SetField(fields, "Height", character.Profile.Height);
-                SetField(fields, "Weight", character.Profile.Weight);
-                SetField(fields, "Eyes", character.Profile.Eyes);
-                SetField(fields, "Skin", character.Profile.Skin);
-                SetField(fields, "Hair", character.Profile.Hair);
-                SetField(fields, "PersonalityTraits ", character.Roleplay.PersonalityTraits); // 注意空格
-                SetField(fields, "Ideals", character.Roleplay.Ideals);
-                SetField(fields, "Bonds", character.Roleplay.Bonds);
-                SetField(fields, "Flaws", character.Roleplay.Flaws);
-                SetField(fields, "角色经历", character.Roleplay.CharacterExperience);
-                SetField(fields, "Backstory", character.Roleplay.CharacterBackstory);
-                SetField(fields, "Allies", character.Roleplay.AlliesAndOrganizations);
-                SetField(fields, "Treasure", character.Roleplay.Treasure);
-                SetField(fields, "Feat+Traits", character.Roleplay.FeaturesAndTraits);
+                SetText(form, "Age", p.Age);
+                SetText(form, "Height", p.Height);
+                SetText(form, "Weight", p.Weight);
+                SetText(form, "Eyes", p.Eyes);
+                SetText(form, "Skin", p.Skin);
+                SetText(form, "Hair", p.Hair);
 
-                // --- 属性 ---
-                SetField(fields, "STR", character.Attributes.Strength.ToString());
-                SetField(fields, "STRmod", character.Attributes.StrengthMod.ToString());
-                SetField(fields, "DEX", character.Attributes.Dexterity.ToString());
-                SetField(fields, "DEXmod ", character.Attributes.DexterityMod.ToString()); // 注意空格
-                SetField(fields, "CON", character.Attributes.Constitution.ToString());
-                SetField(fields, "CONmod", character.Attributes.ConstitutionMod.ToString());
-                SetField(fields, "INT", character.Attributes.Intelligence.ToString());
-                SetField(fields, "INTmod", character.Attributes.IntelligenceMod.ToString());
-                SetField(fields, "WIS", character.Attributes.Wisdom.ToString());
-                SetField(fields, "WISmod", character.Attributes.WisdomMod.ToString());
-                SetField(fields, "CHA", character.Attributes.Charisma.ToString());
-                SetField(fields, "CHAmod", character.Attributes.CharismaMod.ToString());
+                var r = character.Roleplay;
+                SetText(form, "PersonalityTraits ", r.PersonalityTraits);
+                SetText(form, "Ideals", r.Ideals);
+                SetText(form, "Bonds", r.Bonds);
+                SetText(form, "Flaws", r.Flaws);
+                SetText(form, "角色经历", r.CharacterExperience);
+                SetText(form, "Backstory", r.CharacterBackstory);
+                SetText(form, "Allies", r.AlliesAndOrganizations);
+                SetText(form, "Treasure", r.Treasure);
+                SetText(form, "Feat+Traits", r.FeaturesAndTraits);
+
+                // --- 属性 & 调整值 ---
+                var a = character.Attributes;
+                SetText(form, "STR", a.Strength.ToString());
+                SetText(form, "STRmod", a.StrengthMod.ToString());
+                SetText(form, "DEX", a.Dexterity.ToString());
+                SetText(form, "DEXmod ", a.DexterityMod.ToString());
+                SetText(form, "CON", a.Constitution.ToString());
+                SetText(form, "CONmod", a.ConstitutionMod.ToString());
+                SetText(form, "INT", a.Intelligence.ToString());
+                SetText(form, "INTmod", a.IntelligenceMod.ToString());
+                SetText(form, "WIS", a.Wisdom.ToString());
+                SetText(form, "WISmod", a.WisdomMod.ToString());
+                SetText(form, "CHA", a.Charisma.ToString());
+                SetText(form, "CHAmod", a.CharismaMod.ToString());
 
                 // --- 熟练项 ---
                 foreach (var kvp in _skillMap)
                 {
-                    var prop = typeof(Proficiencies).GetProperty(kvp.Value);
-                    if (prop != null && (bool)prop.GetValue(character.Proficiencies))
-                    {
-                        SetCheckBox(fields, $"Check Box {kvp.Key}", true);
-                    }
+                    bool val = (bool)(typeof(Proficiencies).GetProperty(kvp.Value)?.GetValue(character.Proficiencies) ?? false);
+                    SetCheck(form, $"Check Box {kvp.Key}", val);
                 }
-                foreach (var kvp in _attrMap)
+                foreach (var kvp in _saveMap)
                 {
-                    var prop = typeof(Proficiencies).GetProperty(kvp.Value);
-                    if (prop != null && (bool)prop.GetValue(character.Proficiencies))
-                    {
-                        SetCheckBox(fields, $"Check Box {kvp.Key}", true);
-                    }
+                    bool val = (bool)(typeof(Proficiencies).GetProperty(kvp.Value)?.GetValue(character.Proficiencies) ?? false);
+                    SetCheck(form, $"Check Box {kvp.Key}", val);
                 }
-                SetField(fields, "ProfBonus", "" + character.Profile.ProficiencyBonus);
-                SetField(fields, "Passive Perception", character.Profile.PassivePerception.ToString());
-                SetField(fields, "Inspiration", character.Profile.Inspiration);
-                SetField(fields, "ProficienciesLang", character.Proficiencies.OtherProficienciesAndLanguages);
+
+                SetText(form, "ProfBonus", p.ProficiencyBonus.ToString());
+                SetText(form, "Passive Perception", p.PassivePerception.ToString());
+                SetText(form, "Inspiration", p.Inspiration);
+                SetText(form, "ProficienciesLang", character.Proficiencies.OtherProficienciesAndLanguages);
 
                 // --- 战斗 ---
-                SetField(fields, "AC", "" + character.Combat.ArmorClass);
-                SetField(fields, "Initiative", "" + character.Combat.Initiative);
-                SetField(fields, "Speed", character.Combat.Speed);
-                SetField(fields, "HPMax", "" + character.Combat.HitPointsMax);
-                SetField(fields, "HPCurrent", "" + character.Combat.HitPointsMax); // 导出时填满
-                SetField(fields, "HDTotal", character.Combat.HitDiceTotal);
-                SetField(fields, "HDCurrent", character.Combat.HitDiceTotal);
-                SetField(fields, "AttacksAndSpellcasting", character.Combat.AttacksAndSpellcastingNotes);
-                SetField(fields, "Ability", character.Combat.Ability);
+                var c = character.Combat;
+                SetText(form, "AC", c.ArmorClass.ToString());
+                SetText(form, "Initiative", c.Initiative.ToString());
+                SetText(form, "Speed", c.Speed);
 
-                SetField(fields, "Equipment", character.Inventory.EquipmentText);
-                SetField(fields, "CP", "" + character.Inventory.CP);
-                SetField(fields, "SP", "" + character.Inventory.SP);
-                SetField(fields, "EP", "" + character.Inventory.EP);
-                SetField(fields, "GP", "" + character.Inventory.GP);
-                SetField(fields, "PP", "" + character.Inventory.PP);
+                SetText(form, "HPMax", c.HitPointsMax.ToString());
+                SetText(form, "HPCurrent", c.HitPointsMax.ToString());
+                SetText(form, "HDTotal", c.HitDiceTotal);
+                SetText(form, "HDCurrent", c.HitDiceTotal);
+
+                SetText(form, "AttacksAndSpellcasting", c.AttacksAndSpellcastingNotes);
+                SetText(form, "Ability", c.Ability);
+
+                var i = character.Inventory;
+                SetText(form, "Equipment", i.EquipmentText);
+                SetText(form, "CP", i.CP.ToString());
+                SetText(form, "SP", i.SP.ToString());
+                SetText(form, "EP", i.EP.ToString());
+                SetText(form, "GP", i.GP.ToString());
+                SetText(form, "PP", i.PP.ToString());
 
                 // --- 武器 ---
-                for (int i = 0; i < Math.Min(3, character.Weapons.Count); i++)
+                for (int idx = 0; idx < Math.Min(3, character.Weapons.Count); idx++)
                 {
-                    int id = i + 1;
-                    var wpn = character.Weapons[i];
-                    SetField(fields, $"Wpn Name {id}", wpn.Name);
-                    // PDF 命名: Wpn1 AtkBonus, Wpn2 AtkBonus...
-                    SetField(fields, $"Wpn{id} AtkBonus", wpn.AttackBonus.ToString());
-                    SetField(fields, $"Wpn{id} Damage", wpn.Damage);
+                    int id = idx + 1;
+                    var wpn = character.Weapons[idx];
+                    SetText(form, $"Wpn Name {id}", wpn.Name);
+                    SetText(form, $"Wpn{id} AtkBonus", wpn.AttackBonus.ToString());
+                    SetText(form, $"Wpn{id} Damage", wpn.Damage);
                 }
 
                 // --- 法术 ---
-                SetField(fields, "Spellcasting Class", "" + character.Spellbook.SpellcastingClass);
-                SetField(fields, "SpellcastingAbility", character.Spellbook.SpellcastingAbility);
-                SetField(fields, "SpellSaveDC", character.Spellbook.SpellSaveDC.ToString());
-                SetField(fields, "SpellAtkBonus", character.Spellbook.SpellAttackBonus.ToString());
+                var s = character.Spellbook;
+                SetText(form, "Spellcasting Class", s.SpellcastingClass);
+                SetText(form, "SpellcastingAbility", s.SpellcastingAbility);
+                SetText(form, "SpellSaveDC", s.SpellSaveDC.ToString());
+                SetText(form, "SpellAtkBonus", s.SpellAttackBonus.ToString());
 
                 for (int level = 0; level <= 9; level++)
                 {
-                    var group = character.Spellbook.AllSpells[level];
+                    var group = s.AllSpells[level];
                     if (level > 0)
                     {
-                        SetField(fields, $"SlotsTotal {level}", group.TotalSlots.ToString());
-                        SetField(fields, $"SlotsRemaining {level}", "0");
+                        SetText(form, $"SlotsTotal {level}", group.TotalSlots.ToString());
+                        SetText(form, $"SlotsRemaining {level}", group.TotalSlots.ToString());
                     }
 
-                    for (int i = 0; i < group.Spells.Count; i++)
+                    for (int k = 0; k < group.Spells.Count; k++)
                     {
-                        var spell = group.Spells[i];
-                        int pdfIndex = i + 1;
+                        var spell = group.Spells[k];
+                        int pdfIndex = k + 1;
                         string suffix = $"{level}{pdfIndex:D2}";
 
                         if (!string.IsNullOrWhiteSpace(spell.Name))
                         {
-                            SetField(fields, $"Spells {suffix}", spell.Name);
-                            if (spell.IsPrepared) SetCheckBox(fields, $"Check Box S{suffix}", true);
+                            SetText(form, $"Spells {suffix}", spell.Name);
+                            SetCheck(form, $"Check Box S{suffix}", spell.IsPrepared);
                         }
                     }
                 }
+
+                document.Save(outputPath);
             });
         }
 
-        // === 辅助方法 ===
+        // ==================== 辅助方法 ====================
 
-        private static string GetString(IDictionary<string, PdfFormField> fields, string key)
+        private static string GetText(PdfAcroForm form, string key)
         {
-            // 模糊匹配：去除首尾空格
-            var field = fields.FirstOrDefault(f => f.Key.Trim() == key.Trim()).Value;
-            return field?.GetValueAsString() ?? "";
-        }
+            var fieldName = form.Fields.Names.FirstOrDefault(n => n.Trim() == key.Trim());
+            if (fieldName == null) return "";
 
-        private static bool GetBool(IDictionary<string, PdfFormField> fields, string key)
-        {
-            var field = fields.FirstOrDefault(f => f.Key.Trim() == key.Trim()).Value;
-            if (field == null) return false;
-
-            // Checkbox 选中时通常值为 "Yes" 或 "/Yes"，未选中为 "Off" 或 "/Off"
-            var value = field.GetValueAsString();
-            return value != null && (value.Equals("Yes", StringComparison.OrdinalIgnoreCase) || value.Equals("On", StringComparison.OrdinalIgnoreCase));
-        }
-
-        private static void SetField(IDictionary<string, PdfFormField> fields, string key, string value)
-        {
-            var field = fields.FirstOrDefault(f => f.Key.Trim() == key.Trim()).Value;
-            field?.SetValue(value ?? "");
-        }
-
-        private static void SetCheckBox(IDictionary<string, PdfFormField> fields, string key, bool isChecked)
-        {
-            var field = fields.FirstOrDefault(f => f.Key.Trim() == key.Trim()).Value;
-            if (field is PdfButtonFormField checkBox)
+            if (form.Fields[fieldName] is PdfTextField textField)
             {
-                // 设置为 "Yes" 通常是选中状态，取决于 PDF 定义的 Export Value
-                if (isChecked)
+                if (textField.Value is PdfString pdfString)
                 {
-                    // 尝试获取 Checkbox 的选中状态值，通常是 "Yes"
-                    string[] states = checkBox.GetAppearanceStates();
-                    string onState = states.FirstOrDefault(s => !s.Equals("Off", StringComparison.OrdinalIgnoreCase)) ?? "Yes";
-                    checkBox.SetValue(onState);
+                    return pdfString.Value;
                 }
-                else
-                {
-                    checkBox.SetValue("Off");
-                }
+
+                return textField.Value?.ToString() ?? "";
+            }
+
+            return "";
+        }
+
+        private static bool GetBool(PdfAcroForm form, string key)
+        {
+            var fieldName = form.Fields.Names.FirstOrDefault(n => n.Trim() == key.Trim());
+            if (fieldName == null) return false;
+            if (form.Fields[fieldName] is PdfCheckBoxField checkBox)
+            {
+                return checkBox.Checked;
+            }
+            return false;
+        }
+
+        private static void SetText(PdfAcroForm form, string key, string value)
+        {
+            var fieldName = form.Fields.Names.FirstOrDefault(n => n.Trim() == key.Trim());
+            if (fieldName == null) return;
+            if (form.Fields[fieldName] is PdfTextField textField)
+            {
+                textField.Value = new PdfString(value ?? "");
+            }
+        }
+
+        private static void SetCheck(PdfAcroForm form, string key, bool isChecked)
+        {
+            var fieldName = form.Fields.Names.FirstOrDefault(n => n.Trim() == key.Trim());
+            if (fieldName == null) return;
+            if (form.Fields[fieldName] is PdfCheckBoxField checkBox)
+            {
+                checkBox.Checked = isChecked;
             }
         }
 
