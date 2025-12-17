@@ -51,7 +51,7 @@
             </ui:Card>
 
             <!-- 发现新版本时显示的内容 -->
-            <ui:Card Visibility="{Binding HasNewVersion, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <ui:Card Visibility="{Binding HasNewVersion, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,5,0,0">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -79,12 +79,96 @@
             </ui:Card>
 
             <!-- 版权/开源信息 -->
-            <ui:CardAction Icon="{ui:SymbolIcon Code24}" Command="{Binding GoToDownloadCommand}">
+            <ui:CardAction Icon="{ui:SymbolIcon Code24}" Command="{Binding GoToDownloadCommand}" Margin="0,5,0,0">
                 <StackPanel>
-                    <TextBlock Text="开源仓库" FontWeight="SemiBold"/>
+                    <TextBlock Text="Git仓库地址" FontWeight="SemiBold"/>
                     <TextBlock Text="https://github.com/cadros1/DndToolkit" FontSize="12" Foreground="Gray"/>
                 </StackPanel>
             </ui:CardAction>
+
+            <!-- 1. 许可 (PolyForm Noncommercial) -->
+            <ui:CardExpander Icon="{ui:SymbolIcon Certificate24}" Margin="0,5,0,0">
+                <ui:CardExpander.Header>
+                    <StackPanel>
+                        <TextBlock Text="DnD Toolkit" FontWeight="Bold" FontSize="14"/>
+                        <TextBlock Text="许可协议" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </ui:CardExpander.Header>
+
+                <StackPanel Margin="0,5">
+                    <TextBlock Text="Copyright © 2025 cadros1" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="本软件源代码采用 PolyForm Noncommercial License 1.0.0 进行授权。" 
+                       Foreground="{DynamicResource SystemAccentColorBrush}" FontWeight="Bold"/>
+
+                    <TextBlock TextWrapping="Wrap" Margin="0,10,0,0" FontSize="13" LineHeight="20">
+                        <Run FontWeight="Bold">允许：</Run><LineBreak/>
+                        您有权免费使用、复制、修改和分发本软件及其源代码。<LineBreak/><LineBreak/>
+                        <Run FontWeight="Bold">禁止：</Run><LineBreak/>
+                        您不得将本软件用于任何<Run FontWeight="Bold">商业目的</Run>。包括但不限于：<LineBreak/>
+                        1. 出售本软件或其衍生作品。<LineBreak/>
+                        2. 将本软件作为付费服务的一部分提供。<LineBreak/><LineBreak/>
+                        <Run FontWeight="Bold">义务 (Obligations)：</Run><LineBreak/>
+                        分发本软件或其修改版本时，必须保留原始版权声明和本许可协议文本。
+                    </TextBlock>
+
+                    <!-- 协议链接按钮 -->
+                    <ui:HyperlinkButton NavigateUri="https://polyformproject.org/licenses/noncommercial/1.0.0/"
+                        Foreground="{DynamicResource SystemAccentColorBrush}"
+                        Margin="0,10,0,0" Icon="{ui:SymbolIcon Symbol='Link24'}">
+                        PolyForm Noncommercial 1.0.0
+                    </ui:HyperlinkButton>
+                </StackPanel>
+            </ui:CardExpander>
+
+            <!-- 2. 第三方开源声明 (MIT/Apache) -->
+            <ui:CardExpander Icon="{ui:SymbolIcon CodeBlock24}" Margin="0,5,0,0">
+                <ui:CardExpander.Header>
+                    <TextBlock Text="第三方开源项目声明" FontWeight="Bold" FontSize="14"/>
+                </ui:CardExpander.Header>
+                <StackPanel Margin="0,5">
+                    <TextBlock Text="本软件使用了以下开源项目：" Margin="0,0,0,15" Foreground="Gray"/>
+
+                    <!-- PdfSharp -->
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ui:HyperlinkButton NavigateUri="https://www.pdfsharp.com/" Icon="{ui:SymbolIcon Link24}">
+                            PDFsharp-WPF
+                        </ui:HyperlinkButton>
+                        <TextBlock Text="MIT License" Grid.Column="1" VerticalAlignment="Center" Foreground="Gray"/>
+                    </Grid>
+                    <Border Height="1" Background="{DynamicResource CardStrokeColorDefaultBrush}" Margin="0,0,0,10"/>
+
+                    <!-- WPF-UI -->
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ui:HyperlinkButton NavigateUri="https://wpfui.lepo.co/" Icon="{ui:SymbolIcon Link24}">
+                            WPF-UI
+                        </ui:HyperlinkButton>
+                        <TextBlock Text="MIT License" Grid.Column="1" VerticalAlignment="Center" Foreground="Gray"/>
+                    </Grid>
+                    <Border Height="1" Background="{DynamicResource CardStrokeColorDefaultBrush}" Margin="0,0,0,10"/>
+
+                    <!-- CommunityToolkit.Mvvm -->
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ui:HyperlinkButton NavigateUri="https://learn.microsoft.com/zh-cn/dotnet/communitytoolkit/mvvm/" Icon="{ui:SymbolIcon Link24}">
+                            CommunityToolkit.Mvvm
+                        </ui:HyperlinkButton>
+                        <TextBlock Text="MIT License" Grid.Column="1" VerticalAlignment="Center" Foreground="Gray"/>
+                    </Grid>
+
+                </StackPanel>
+            </ui:CardExpander>
 
         </StackPanel>
     </Grid>
