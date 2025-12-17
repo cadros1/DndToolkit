@@ -10,7 +10,6 @@ using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
-using iText.FontAsian;
 
 namespace DnDToolkit
 {
@@ -74,7 +73,6 @@ namespace DnDToolkit
 
             try
             {
-                iText.FontAsian.FontAsianDummyInitializer _ = new();
                 //await PdfService.ExtractFieldNamesToTxtAsync("D:\\output.txt");
                 var mainWindow = _host.Services.GetRequiredService<MainWindow>();
                 mainWindow.Show();
