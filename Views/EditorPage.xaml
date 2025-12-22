@@ -7,6 +7,7 @@
       xmlns:vm="clr-namespace:DnDToolkit.ViewModels"
       xmlns:models="clr-namespace:DnDToolkit.Models"
       xmlns:helpers="clr-namespace:DnDToolkit.Helpers"
+      xmlns:controls="clr-namespace:DnDToolkit.Controls"
       mc:Ignorable="d"
       d:DesignHeight="702" d:DesignWidth="1080"
       d:DataContext="{d:DesignInstance vm:EditorViewModel}"
@@ -241,7 +242,12 @@
                                         <ui:NumberBox Value="{Binding CurrentCharacter.Profile.ProficiencyBonus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="被动察觉" Style="{StaticResource LabelStyle}"/>
+                                        <controls:InfoLabel Label="被动察觉"
+                                                            Title="被动检定"
+                                                            Description="被动检定是一种不需要掷骰的特殊属性检定。这种检定可以反映一些频繁重覆行为的平均结果，例如，再三地搜索密门，或者当DM想秘密地判定某角色是否成功而不便掷骰时（比如察觉躲藏起来的怪物）。是否采用被动检定完全取决于你的DM。
+                                                                         被动检定的总值为10+所有一般情况下能适用于相应类型检定的加值。
+                                                                         如果该角色进行相应类型检定时具有优势，则其被动检定值加上5，劣势则减去5。
+                                                                         例如，一名1级角色感知值为15，并且拥有察觉技能的熟练项，则其被动感知（察觉）值为10+2+2=14。"/>
                                         <ui:NumberBox Value="{Binding CurrentCharacter.Profile.PassivePerception, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                     </StackPanel>
                                 </Grid>
@@ -348,7 +354,7 @@
                                         <ui:NumberBox Value="{Binding CurrentCharacter.Combat.ArmorClass, UpdateSourceTrigger=PropertyChanged}" Minimum="0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="先攻" Style="{StaticResource LabelStyle}"/>
+                                        <TextBlock Text="先攻加值" Style="{StaticResource LabelStyle}"/>
                                         <ui:NumberBox Value="{Binding CurrentCharacter.Combat.Initiative, UpdateSourceTrigger=PropertyChanged}" Minimum="0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="4">
@@ -360,7 +366,7 @@
                                         <ui:NumberBox Value="{Binding CurrentCharacter.Combat.HitPointsMax, UpdateSourceTrigger=PropertyChanged}" Minimum="0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="8">
-                                        <TextBlock Text="生命骰" Style="{StaticResource LabelStyle}"/>
+                                        <TextBlock Text="最大生命骰" Style="{StaticResource LabelStyle}"/>
                                         <ui:TextBox Text="{Binding CurrentCharacter.Combat.HitDiceTotal}"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="10">
@@ -393,7 +399,7 @@
                                         <ColumnDefinition Width="2*"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="名称" Style="{StaticResource LabelStyle}"/>
-                                    <TextBlock Grid.Column="2" Text="加值" Style="{StaticResource LabelStyle}"/>
+                                    <TextBlock Grid.Column="2" Text="命中加值" Style="{StaticResource LabelStyle}"/>
                                     <TextBlock Grid.Column="4" Text="伤害/类型" Style="{StaticResource LabelStyle}"/>
                                 </Grid>
 
@@ -682,12 +688,20 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="2" Margin="0,0,15,0">
-                                <TextBlock Text="法术豁免难度DC" Style="{StaticResource LabelStyle}"/>
+                                <controls:InfoLabel Label="法术豁免难度" 
+                                                    Title="法术豁免难度" 
+                                                    Description="很多法术会说明目标可以进行一次豁免来回避法术部分或全部的效应。相关法术的描述中会详细说明使用的什么属性来进行豁免，以及豁免成功和失败的后果。
+                                                                 你的法术的豁免DC为8＋你的施法属性调整值＋你的熟练加值。
+                                                                 例如，法术“圣火术”要求敌人进行一次敏捷豁免，这次豁免检定的难度即为你的法术豁免难度。"/>
                                 <ui:NumberBox Value="{Binding CurrentCharacter.Spellbook.SpellSaveDC, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="3">
-                                <TextBlock Text="法术攻击加值" Style="{StaticResource LabelStyle}"/>
+                                <controls:InfoLabel Label="法术攻击加值" 
+                                                    Title="法术攻击加值" 
+                                                    Description="某些法术会要求施法者进行攻击检定来决定法术是否有命中指定的目标。
+                                                                 你进行法术攻击的攻击加值等于你的施法属性调整值＋你的熟练加值。
+                                                                 例如，法术“火焰箭”要求你进行一次远程法术攻击，这次攻击检定的加值即为你的法术攻击加值。"/>
                                 <ui:NumberBox Value="{Binding CurrentCharacter.Spellbook.SpellAttackBonus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
                         </Grid>
